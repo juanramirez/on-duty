@@ -9,9 +9,17 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "node -r esm ."
+    "start": "node -r esm .",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "esm": "^3.2.25"
+    "date-fns": "^2.9.0",
+    "esm": "^3.2.25",
+    "lodash": "^4.17.15",
+    "mersenne-twister": "^1.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-recommended": "^4.0.0"
   }
 }
