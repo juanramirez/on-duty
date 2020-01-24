@@ -1,18 +1,22 @@
 export const doctors = [
     {
         id: 0,
-        name: 'John'
+        name: 'John',
+        notAvailableWeekdays: ['Mon']
     },
     {
         id: 1,
-        name: 'Nancy'
+        name: 'Nancy',
+        notAvailableWeekdays: ['Tue']
     },
     {
         id: 2,
-        name: 'Greg'
+        name: 'Greg',
+        notAvailableWeekdays: ['Thu']
     },
     {
         id: 3,
-        name: 'Betty'
+        name: 'Betty',
+        notAvailableWeekdays: ['Mon', 'Wed']
     }
 ];
