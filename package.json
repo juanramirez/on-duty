@@ -1,0 +1,17 @@
+{
+  "name": "on-duty",
+  "version": "1.0.0",
+  "description": "On duty schedule organizer for hospital services",
+  "main": "lib/index.js",
+  "module": "lib/main.js",
+  "repository": "git@github.com:juanramirez/on-duty.git",
+  "author": "Juan Ramírez Ruiz <juan.ramirez.ruiz@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node -r esm ."
+  },
+  "dependencies": {
+    "esm": "^3.2.25"
+  }
+}
