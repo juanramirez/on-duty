@@ -5,7 +5,7 @@ export const mutationAggresivity = 0.5;
 export const populationSize = 1000;
 export const stopScore = 100;
 export const islandOptions = {
-    islands: 5,
+    islands: 3,
     migration: 0.1,
     epoch: 10
 };
