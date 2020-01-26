@@ -1,7 +1,7 @@
 export const doctors = [
     {
         id: 'john',
-        name: 'John Christopher Jackson',
+        name: 'John C. Jackson',
         notAvailableWeekdays: ['Mon'],
         doubletsTolerance: 0
     },
