@@ -11,7 +11,8 @@ export const islandOptions = {
 };
 
 export const evaluatorWeights = {
-    commonNotConsecutiveWeekdays: 33.34,
-    personalNotAvailableWeekdays: 33.33,
-    personalNotAvailableDates: 33.33
+    commonNotConsecutiveWeekdays: 32.25,
+    personalNotAvailableWeekdays: 32.25,
+    personalNotAvailableDates: 32.25,
+    avoidDoublets: 3.25
 };

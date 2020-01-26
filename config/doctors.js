@@ -2,7 +2,8 @@ export const doctors = [
     {
         id: 'john',
         name: 'John Christopher Jackson',
-        notAvailableWeekdays: ['Mon']
+        notAvailableWeekdays: ['Mon'],
+        doubletsTolerance: 0
     },
     {
         id: 'nancy',
@@ -12,7 +13,8 @@ export const doctors = [
     {
         id: 'george',
         name: 'George Garfield',
-        notAvailableWeekdays: ['Thu']
+        notAvailableWeekdays: ['Thu'],
+        doubletsTolerance: 0
     },
     {
         id: 'bobbie',
