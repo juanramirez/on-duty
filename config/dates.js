@@ -24,3 +24,10 @@ export const desiredDutyDates = {
         '29/02/2020'
     ]
 };
+
+export const desiredFreeDates = {
+    john: [
+        '01/02/2020'
+    ]
+};
+
