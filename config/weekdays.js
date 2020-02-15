@@ -7,3 +7,9 @@ export const notConsecutiveWeekdays = {
     Sat: ['Fri'],
     Sun: ['Sat']
 };
+
+export const commonDesiredFreeWeekdays = [
+    'Fri',
+    'Sat',
+    'Sun'
+];
