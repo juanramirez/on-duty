@@ -11,13 +11,14 @@ export const islandOptions = {
 };
 
 export const evaluatorWeights = {
-    commonNotConsecutiveWeekdays: 32.01,
-    personalNotAvailableWeekdays: 32.01,
-    personalNotAvailableDates: 32.01,
-    avoidDoublets: 3.201,
-    personalDesiredDutyDates: 0.321,
+    commonNotConsecutiveWeekdays: 31.99,
+    personalNotAvailableWeekdays: 31.99,
+    personalNotAvailableDates: 31.99,
+    avoidDoublets: 3.199,
+    personalDesiredDutyDates: 0.319,
     personalDutiesDistribution: 0.16,
     totalDutyDaysBalance: 0.096,
     personalDesiredFreeDates: 0.096,
-    commonDesiredFreeWeekdaysBalance: 0.096
+    commonDesiredFreeWeekdaysBalance: 0.096,
+    commonIsolatedDesiredFreeWeekdaysBalance: 0.064
 };
