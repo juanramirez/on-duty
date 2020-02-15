@@ -19,7 +19,7 @@ export const evaluatorWeights = {
     personalDutiesDistribution: 0.16,
     totalDutyDaysBalance: 0.096,
     personalDesiredFreeDates: 0.096,
-    commonDesiredFreeWeekdaysBalance: 0.096,
-    commonIsolatedDesiredFreeWeekdaysBalance: 0.064,
+    weekendDaysBalance: 0.096,
+    isolatedWeekendDaysBalance: 0.064,
     maxPossibleFreeWeekends: 0.064
 };
