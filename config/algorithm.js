@@ -10,6 +10,8 @@ export const islandOptions = {
     epoch: 10
 };
 
+export const offsetRatio = 0.75;
+
 export const evaluatorWeights = {
     commonNotConsecutiveWeekdays: 31.969,
     personalNotAvailableWeekdays: 31.969,
