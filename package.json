@@ -16,7 +16,7 @@
     "date-fns": "^2.9.0",
     "esm": "^3.2.25",
     "genetical": "^0.3.7",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mathjs": "^6.5.0"
   },
   "devDependencies": {
