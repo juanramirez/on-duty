@@ -17,11 +17,12 @@
     "esm": "^3.2.25",
     "genetical": "^0.3.7",
     "lodash": "^4.17.21",
-    "mathjs": "^9.5.1",
-    "minimist": "^0.2.1"
+    "mathjs": "^10.0.0",
+    "minimist": "^1.2.5"
   },
   "devDependencies": {
-    "eslint": "^8.0.1",
-    "eslint-config-recommended": "^4.1.0"
+    "eslint": "^8.2.0",
+    "eslint-config-recommended": "^4.1.0",
+    "yarn-upgrade-all": "^0.5.4"
   }
 }
