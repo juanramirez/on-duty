@@ -21,7 +21,7 @@ It's an internal string which will represent a doctor. Doesn't have to be human-
 The human-readable full name of the doctor.
 
 #### notAvailableWeekdays
-An array which represents the weekdays that the doctor cannot be on-duty, for any kind of reason. I use this, for example, to exclude the weekday previous to the day that the doctor has consultancy, but can also be used for some other kind of weekday exclusion. For instance, if a doctor cannot have on-duty from Mondays to Fridays, for some other kind of reason.
+An array which represents the weekdays that the doctor cannot be on-duty, for any kind of reason. I use this, for example, to exclude the weekday previous to the day that the doctor has consultancy, but can also be used for some other kind of weekday exclusion. For instance, if a doctor cannot be on-duty from Mondays to Wednesdays, for some other kind of reason.
 
 #### doubletsTolerance
 I call _doublet_ to a pair of consecutive on-duty days, separated by a day _not on-duty_. For instance, having Wednesday and Friday on-duty. Working a _doublet_ is hard, but there are times that _doublets_ are needed to fulfill other parameters better; however, there are people that, for some personal circumstances, have less tolerance than others to have _doublets_. I introduced this parameter to be able to apply some _restrictions_ (or at least _preferences_) when assigning _doublets_ to some doctors. This field is expected to be a _float_ that can go from `0` (no tolerance to _doublets_ at all) to `1` (high tolerance to doublets).
