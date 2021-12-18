@@ -1,7 +1,7 @@
 {
   "name": "on-duty",
   "version": "1.0.0",
-  "description": "On duty schedule organizer for hospital services",
+  "description": "On duty schedule organizer for hospital services based on evolutionary algorithms",
   "main": "lib/index.js",
   "module": "lib/main.js",
   "repository": "git@github.com:juanramirez/on-duty.git",
@@ -13,7 +13,6 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "date-fns": "^2.25.0",
     "esm": "^3.2.25",
     "genetical": "^0.3.7",
     "lodash": "^4.17.21",
@@ -21,7 +20,6 @@
     "minimist": "^1.2.5"
   },
   "devDependencies": {
-    "eslint": "^8.2.0",
     "eslint-config-recommended": "^4.1.0",
     "yarn-upgrade-all": "^0.5.4"
   }

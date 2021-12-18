@@ -6,10 +6,10 @@ Theoretically, a similar approach could be used to organize on-duty days in any 
 This repo has the code corresponding to the command-line version of _DoctorPlan_. Parallely, I'm also trying to build a client-server application around this, which I expect to have desktop and mobile versions if possible.
 
 ## How to use it
-In the *config* directory you have some JS files. There are some data there, wrote as example.
+In the *config* directory you have some JS files. There is some data there, wrote as example.
 
 ### General algorithm configuration (algorithm.js)
-_DoctorPlan_ uses the [Genetical](https://github.com/rubenjgarcia/genetical) library. Hence, the algorithm parameters are the same than the ones used by that library. They are very well explained in the [Genetical library documentation](https://github.com/rubenjgarcia/genetical#usage). The default ones in this repo work generally well for me, but may not work for your case and, of course, can be changed.
+_DoctorPlan_ uses the [Genetical](https://github.com/rubenjgarcia/genetical) library. Hence, the algorithm parameters are the same than the ones used by that library. They are very well explained in the [Genetical library documentation](https://github.com/rubenjgarcia/genetical#usage). The default ones on this repo (I mean the _on-duty_ repo, not the _Genetical_ one) work generally well for me, but may not work for your case and, of course, you can change them to fit your needs ;)
 
 ### Doctor configuration (doctors.js)
 There you have an array with the doctors of the service. Every doctor has an `id`, a `name`, an array of `notAvailableWeekdays` (optional), and a number that represents the `doubletsTolerance` (optional as well, default is `1` -which means a high tolerance to on-duty days-). I'll try to explain what those fields mean:
@@ -21,7 +21,20 @@ It's an internal string which will represent a doctor. Doesn't have to be human-
 The human-readable full name of the doctor.
 
 #### notAvailableWeekdays
-An array which represents the weekdays that the doctor cannot be on-duty, for any kind of reason. I use this, for example, to exclude the weekday previous to the day that the doctor has consultancy, but can also be used for some other kind of weekday exclusion. For instance, if a doctor cannot be on-duty from Mondays to Wednesdays, for some other kind of reason.
+An array which represents the weekdays that the doctor cannot be on-duty, for any kind of reason. We use this, for example, to exclude the weekday previous to the doctor's consultancy weekday, but it can also be used for some other kind of weekday exclusion. For instance, if a doctor cannot be on-duty from Mondays to Wednesdays, for some other kind of reason.
 
 #### doubletsTolerance
-I call _doublet_ to a pair of consecutive on-duty days, separated by a day _not on-duty_. For instance, having Wednesday and Friday on-duty. Working a _doublet_ is hard, but there are times that _doublets_ are needed to fulfill other parameters better; however, there are people that, for some personal circumstances, have less tolerance than others to have _doublets_. I introduced this parameter to be able to apply some _restrictions_ (or at least _preferences_) when assigning _doublets_ to some doctors. This field is expected to be a _float_ that can go from `0` (no tolerance to _doublets_ at all) to `1` (high tolerance to doublets).
+We call _doublet_ to a pair of consecutive on-duty days, separated by a day _not on-duty_ (for instance, having Wednesday and Friday on-duty). Working a _doublet_ is hard, but there are times that _doublets_ are needed to fulfill other parameters better; however, there are people that, for some personal circumstances, have less tolerance than others to have _doublets_. I introduced this parameter to be able to apply some _restrictions_ (or at least _preferences_) when assigning _doublets_ to some doctors. This field is expected to be a _float_ that can go from `0` (no tolerance to _doublets_ at all) to `1` (high tolerance to doublets, which is the default).
+
+### Dates configuration (dates.js)
+Generally, it will be the only config you'll have to change every month. It will export these constants:
+
+#### notAvailableDates
+An object whose keys are the doctors' ids. Each doctor id will be associated with an array of dates in DD/MM/YYYY format representing the dates that the algorithm will avoid (in all cases) assigning to that doctor.
+
+#### desiredDutyDates
+An object whose keys are the doctors' ids. Each doctor id will be associated with an array of dates in DD/MM/YYYY format representing the dates that the algorithm will try to assign to that doctor.
+
+#### desiredFreeDates
+An object whose keys are the doctors' ids. Each doctor id will be associated with an array of dates in DD/MM/YYYY format representing the dates that the algorithm will try to avoid assigning to that doctor.
+*Note*: It's important understanding the difference between the ´notAvailableDates´ and the ´desiredFreeDates´ objects. In the former case, the dates won't be able to be assigned on-duty for the doctors. The former are generally force majeure reasons; the latter are dates which doctors doesn't like to be assigned just because they don't like to work that date. For instance, if a doctor cannot work some day because he's going to get married, this date would be in ´notAvailableDates´. If a doctor wants to have a free day because it's her birthday, that date would be in ´desiredFreeDates´.
