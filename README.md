@@ -1,5 +1,7 @@
-# on-duty-organizer
-**on-duty-organizer** (a.k.a. "_DoctorPlan_") is an open-source on-duty schedule organizer for hospital services I made using NodeJS. I started it in 2017, when I saw that on-duty days organization consumed my wife (and also the rest of the doctors of the paediatric service in the hospital) a lot of time, energy and discussions. I thought that this problem was ideal to be solved using [evolutionary algorithms](https://en.wikipedia.org/wiki/Evolutionary_algorithm), which had strongly called my attention when I studied them in the career. Hence, _DoctorPlan_ takes into account doctor preferences, mandatory medical consultations and similar factors to organize on-duty days assignation for a hospital service using evolutionary algorithms, and generates the best solution it can.
+### <img src="https://juanramirez.github.io/assets/images/projects/doctorplan/logo-dark.png" alt="DoctorPlan" width="200"/>
+
+# On-duty-organizer
+**On-duty-organizer** (a.k.a. "_DoctorPlan_") is an open-source on-duty schedule organizer for hospital services I made using NodeJS. I started it in 2017, when I saw that on-duty days organization consumed my wife (and also the rest of the doctors of the paediatric service in the hospital) a lot of time, energy and discussions. I thought that this problem was ideal to be solved using [evolutionary algorithms](https://en.wikipedia.org/wiki/Evolutionary_algorithm), which had strongly called my attention when I studied them in the career. Hence, _DoctorPlan_ takes into account doctor preferences, mandatory medical consultations and similar factors to organize on-duty days assignation for a hospital service using evolutionary algorithms, and generates the best solution it can.
 
 Theoretically, a similar approach could be used to organize on-duty days in any kind of professional service which require someone to be always on-duty.
 
@@ -9,7 +11,7 @@ This repo has the code corresponding to the command-line version of _DoctorPlan_
 In the *config* directory you have some JS files. There is some data there, wrote as example.
 
 ### General algorithm configuration (algorithm.js)
-_DoctorPlan_ uses the [Genetical](https://github.com/rubenjgarcia/genetical) library. Hence, the algorithm parameters are the same than the ones used by that library. They are very well explained in the [Genetical library documentation](https://github.com/rubenjgarcia/genetical#usage). The default ones on this repo (I mean the _on-duty_ repo, not the _Genetical_ one) work generally well for me, but may not work for your case and, of course, you can change them to fit your needs ;)
+_DoctorPlan_ uses the [Genetical](https://github.com/rubenjgarcia/genetical) library. Hence, the algorithm parameters are the same than the ones used by that library. They are very well explained in the [Genetical library documentation](https://github.com/rubenjgarcia/genetical#usage). The default values on this repo (I mean the _on-duty_ repo, not the _Genetical_ one) work generally well for me, but may not work for your case and, of course, you can change them to fit your needs ;)
 
 ### Doctor configuration (doctors.js)
 There you have an array with the doctors of the service. Every doctor has an `id`, a `name`, an array of `notAvailableWeekdays` (optional), and a number that represents the `doubletsTolerance` (optional as well, default is `1` -which means a high tolerance to on-duty days-). I'll try to explain what those fields mean:
@@ -37,4 +39,5 @@ An object whose keys are the doctors' ids. Each doctor id will be associated wit
 
 #### desiredFreeDates
 An object whose keys are the doctors' ids. Each doctor id will be associated with an array of dates in DD/MM/YYYY format representing the dates that the algorithm will try to avoid assigning to that doctor.
-*Note*: It's important understanding the difference between the ´notAvailableDates´ and the ´desiredFreeDates´ objects. In the former case, the dates won't be able to be assigned on-duty for the doctors. The former are generally force majeure reasons; the latter are dates which doctors doesn't like to be assigned just because they don't like to work that date. For instance, if a doctor cannot work some day because he's going to get married, this date would be in ´notAvailableDates´. If a doctor wants to have a free day because it's her birthday, that date would be in ´desiredFreeDates´.
+
+*Note*: It's important understanding the difference between the `notAvailableDates` and the `desiredFreeDates` objects. In the former case, the dates won't be able to be assigned on-duty for the doctors. The former are generally _force majeure_ reasons; the latter are dates which doctors doesn't like to be assigned just because they don't like to work that date. For instance, if a doctor cannot work some day because he's going to get married, this date would be in `notAvailableDates`. If a doctor wants to have a free day just because it's her birthday, that date would be in `desiredFreeDates`.
