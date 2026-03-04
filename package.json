@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "esm": "^3.2.25",
-    "genetical": "^0.3.7",
-    "lodash": "^4.17.21",
+    "genetical": "github:juanramirez/genetical",
+    "lodash": "^4.17.23",
     "mathjs": "^10.0.0",
-    "minimist": "^1.2.5"
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "eslint-config-recommended": "^4.1.0",
