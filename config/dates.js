@@ -33,5 +33,5 @@ const desiredFreeDates = {
     ]
 };
 
-module.exports = { notAvailableDates, desiredDutyDates, desiredFreeDates };
+export { notAvailableDates, desiredDutyDates, desiredFreeDates };
 

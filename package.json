@@ -2,6 +2,7 @@
   "name": "on-duty",
   "version": "1.0.0",
   "description": "On duty schedule organizer for hospital services based on evolutionary algorithms",
+  "type": "module",
   "main": "lib/index.js",
   "module": "lib/main.js",
   "repository": "git@github.com:juanramirez/on-duty.git",
@@ -9,14 +10,18 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "node -r esm .",
-    "test": "jest",
+    "start": "node .",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint ."
   },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
   "dependencies": {
-    "esm": "^3.2.25",
+    "date-fns": "^4.1.0",
     "genetical": "github:juanramirez/genetical",
-    "lodash": "^4.17.23",
+    "lodash-es": "^4.17.23",
     "mathjs": "^10.0.0",
     "minimist": "^1.2.8"
   },

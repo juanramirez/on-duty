@@ -2,30 +2,16 @@
   Test: validateConfig.test.js
   Purpose: Minimal Jest tests to validate that config/doctors.js and config/dates.js
   load correctly and have a reasonable structure.
-
-  How to use:
-  1. Install Jest as a dev dependency:
-     npm install --save-dev jest
-
-  2. Add a test script to package.json:
-     "scripts": {
-       "test": "jest --runInBand"
-     }
-
-  3. Run tests:
-     npm test
-
-  The tests are intentionally defensive: they don't assume a strict shape for your
-  config files, but they check for common properties and some cross-consistency
-  where possible.
 */
 
-const path = require('path');
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-function tryRequire(relPath) {
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+async function tryImport(relPath) {
   const p = path.resolve(__dirname, '..', relPath);
-  // require may throw if file has syntax errors or other problems
-  return require(p);
+  return await import(p);
 }
 
 function isValidDateString(s) {
@@ -44,13 +30,13 @@ describe('Config files: doctors and dates', () => {
   let doctorsRaw;
   let datesRaw;
 
-  test('doctors.js loads without throwing and is an array', () => {
-    expect(() => {
-      doctorsRaw = tryRequire('config/doctors.js');
-    }).not.toThrow();
+  test('doctors.js loads without throwing and is an array', async () => {
+    const mod = await tryImport('config/doctors.js');
 
-    // allow module.exports = { doctors: [...] } or directly an array
-    const doctors = Array.isArray(doctorsRaw) ? doctorsRaw : (doctorsRaw && doctorsRaw.doctors) ? doctorsRaw.doctors : null;
+    // allow named export { doctors } or default export
+    const doctors = Array.isArray(mod.doctors) ? mod.doctors
+      : Array.isArray(mod.default) ? mod.default
+      : null;
     expect(Array.isArray(doctors)).toBe(true);
     expect(doctors.length).toBeGreaterThan(0);
 
@@ -60,7 +46,7 @@ describe('Config files: doctors and dates', () => {
 
   test('every doctor is an object and has at least an id or name (string)', () => {
     const doctors = doctorsRaw;
-    doctors.forEach((d, idx) => {
+    doctors.forEach((d) => {
       expect(typeof d).toBe('object');
       // check common identifier keys
       const id = d && (d.id || d.name || d.nombre || d.key);
@@ -73,13 +59,17 @@ describe('Config files: doctors and dates', () => {
     expect(unique.size).toBe(ids.length);
   });
 
-  test('dates.js loads and has a reasonable structure', () => {
-    expect(() => {
-      datesRaw = tryRequire('config/dates.js');
-    }).not.toThrow();
+  test('dates.js loads and has a reasonable structure', async () => {
+    const mod = await tryImport('config/dates.js');
 
     // dates.js exports sections (e.g. notAvailableDates, desiredDutyDates, desiredFreeDates)
     // each is an object mapping doctorId -> array of date strings
+    // Collect all named exports except 'default'
+    const sections = Object.fromEntries(
+      Object.entries(mod).filter(([k]) => k !== 'default')
+    );
+    datesRaw = sections;
+
     expect(typeof datesRaw).toBe('object');
     expect(Object.keys(datesRaw).length).toBeGreaterThan(0);
 
@@ -141,7 +131,7 @@ describe('Config files: doctors and dates', () => {
 
     // If we found clear mismatches, fail the test with a helpful message.
     if (mismatches.length > 0) {
-      fail('Found references in dates config that do not match any doctor id/name: ' + JSON.stringify(mismatches));
+      throw new Error('Found references in dates config that do not match any doctor id/name: ' + JSON.stringify(mismatches));
     }
   });
 });

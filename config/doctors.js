@@ -23,4 +23,4 @@ const doctors = [
     }
 ];
 
-module.exports = { doctors };
+export { doctors };
