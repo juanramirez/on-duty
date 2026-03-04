@@ -1,7 +1,8 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true
+    es6: true,
+    node: true
   },
   extends: [
     'eslint:recommended'
@@ -15,5 +16,13 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-  }
+  },
+  overrides: [
+    {
+      files: ['test/**/*.js'],
+      env: {
+        jest: true
+      }
+    }
+  ]
 }
