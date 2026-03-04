@@ -30,7 +30,7 @@ export const evaluatorWeights = {
     personalNotAvailableDates: 32.137,     // no doctor on their explicitly unavailable dates
 
     // Important soft constraints (~1): strongly influence the result
-    avoidDoublets: 1.339,                  // avoid two duties separated by only one day, per doctor tolerance
+    avoidBackToBack: 1.339,                 // avoid two duties with one day off or less in between, per doctor tolerance
     totalDutyDaysBalance: 1.339,           // balance total duty days across all doctors (accounting for offsets)
 
     // Fairness preferences (~0.1): used to optimise among otherwise equivalent schedules

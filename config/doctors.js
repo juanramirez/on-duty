@@ -3,7 +3,7 @@ const doctors = [
         id: 'john',
         name: 'John C. Jackson',
         notAvailableWeekdays: ['Mon'],
-        doubletsTolerance: 0
+        backToBackTolerance: 0
     },
     {
         id: 'nancy',
@@ -14,7 +14,7 @@ const doctors = [
         id: 'george',
         name: 'George Garfield',
         notAvailableWeekdays: ['Thu'],
-        doubletsTolerance: 0
+        backToBackTolerance: 0
     },
     {
         id: 'bobbie',
