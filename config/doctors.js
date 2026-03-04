@@ -1,4 +1,4 @@
-export const doctors = [
+const doctors = [
     {
         id: 'john',
         name: 'John C. Jackson',
@@ -22,3 +22,5 @@ export const doctors = [
         notAvailableWeekdays: ['Mon', 'Wed']
     }
 ];
+
+module.exports = { doctors };

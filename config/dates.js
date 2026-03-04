@@ -1,4 +1,6 @@
-export const notAvailableDates = {
+// All dates use DD/MM/YYYY format
+
+const notAvailableDates = {
     nancy: [
         '01/02/2020'
     ],
@@ -9,7 +11,7 @@ export const notAvailableDates = {
     ]
 };
 
-export const desiredDutyDates = {
+const desiredDutyDates = {
     john: [
         '28/02/2020'
     ],
@@ -25,9 +27,11 @@ export const desiredDutyDates = {
     ]
 };
 
-export const desiredFreeDates = {
+const desiredFreeDates = {
     john: [
         '01/02/2020'
     ]
 };
+
+module.exports = { notAvailableDates, desiredDutyDates, desiredFreeDates };
 
