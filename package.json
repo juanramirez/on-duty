@@ -26,7 +26,6 @@
     "minimist": "^1.2.8"
   },
   "devDependencies": {
-    "eslint-config-recommended": "^4.1.0",
     "jest": "^30.2.0",
     "yarn-upgrade-all": "^0.5.4"
   }
