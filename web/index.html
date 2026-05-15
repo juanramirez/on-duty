@@ -67,6 +67,11 @@
                     </button>
                 </form>
 
+                <p id="price-estimate" class="hidden text-sm text-slate-500">
+                    <span id="label-estimated-cost">Estimated cost:</span>
+                    <span id="price-value" class="ml-1 font-semibold text-ink"></span>
+                </p>
+
                 <div id="api-panel" class="hidden w-full sm:max-w-xs">
                     <label class="grid gap-1 text-sm font-medium text-slate-700">
                         <span id="label-api">API</span>
@@ -124,6 +129,11 @@
                             Save
                         </button>
                     </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between text-sm">
+                    <span id="label-pricing-tier" class="font-medium text-slate-700">Pricing tier</span>
+                    <span id="pricing-tier-badge" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"></span>
                 </div>
 
                 <details class="group mt-4">
@@ -198,6 +208,13 @@
         </section>
     </main>
 
+    <footer class="border-t border-line">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <p class="text-xs text-slate-400">DoctorPlan</p>
+            <p id="app-version" class="text-xs text-slate-400"></p>
+        </div>
+    </footer>
+
     <script>
         const el = {
             form: document.querySelector('#schedule-form'),
@@ -242,7 +259,13 @@
             labelSchedule: document.querySelector('#label-schedule'),
             labelApi: document.querySelector('#label-api'),
             apiToggle: document.querySelector('#api-toggle'),
-            apiPanel: document.querySelector('#api-panel')
+            apiPanel: document.querySelector('#api-panel'),
+            appVersion: document.querySelector('#app-version'),
+            labelPricingTier: document.querySelector('#label-pricing-tier'),
+            pricingTierBadge: document.querySelector('#pricing-tier-badge'),
+            priceEstimate: document.querySelector('#price-estimate'),
+            labelEstimatedCost: document.querySelector('#label-estimated-cost'),
+            priceValue: document.querySelector('#price-value')
         };
 
         let activeJobId = null;
@@ -279,6 +302,10 @@
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
                 labelApi: 'API endpoint',
                 apiToggle: 'API settings',
+                labelPricingTier: 'Pricing tier',
+                pricingTierLabels: {free: 'Free', low: 'Low', medium: 'Medium', high: 'High'},
+                estimatedCost: 'Estimated cost:',
+                freeLabel: 'Free',
                 labelScore: 'Score',
                 labelMean: 'Mean',
                 labelGeneration: 'Generation',
@@ -374,6 +401,10 @@
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
                 labelApi: 'Endpoint API',
                 apiToggle: 'Ajustes de API',
+                labelPricingTier: 'Rango de precios',
+                pricingTierLabels: {free: 'Gratis', low: 'Bajo', medium: 'Medio', high: 'Alto'},
+                estimatedCost: 'Coste estimado:',
+                freeLabel: 'Gratis',
                 labelScore: 'Puntuación',
                 labelMean: 'Media',
                 labelGeneration: 'Generación',
@@ -458,6 +489,8 @@
         el.labelSchedule.textContent = t.labelSchedule;
         el.labelApi.textContent = t.labelApi;
         el.apiToggle.title = t.apiToggle;
+        el.labelPricingTier.textContent = t.labelPricingTier;
+        el.labelEstimatedCost.textContent = t.estimatedCost;
         el.button.textContent = t.generate;
         el.stopButton.textContent = t.stop;
         el.discardConfig.textContent = t.discard;
@@ -777,7 +810,10 @@
                 `;
             }).join('');
 
+            el.pricingTierBadge.textContent = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier ?? '';
+            if (configState.version) el.appVersion.textContent = configState.version;
             setDirty(false);
+            updatePrice();
 
             el.weightsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {}).map(([key, value]) => `
                 <label class="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-line bg-white px-3 py-2 text-sm">
@@ -983,6 +1019,9 @@
             el.apiPanel.classList.toggle('hidden');
         });
 
+        el.monthSelect.addEventListener('change', updatePrice);
+        el.yearSelect.addEventListener('change', updatePrice);
+
         el.addDoctor.addEventListener('click', () => {
             configState = collectConfig();
             const index = configState.doctors.length + 1;
@@ -1051,6 +1090,85 @@
                 el.saveConfig.textContent = t.save;
             }
         });
+
+        // ─── Price estimation ─────────────────────────────────────────────────────
+        //
+        // The price reflects three dimensions of computational cost:
+        //
+        //   1. ALGORITHM WORK  = populationSize × islands × generationLimit
+        //      How many times the fitness function runs in total.
+        //      Reference: 1 000 pop × 3 islands × 500 gen = 1 500 000 evals → €3.00 (medium).
+        //
+        //   2. ENVIRONMENT COMPLEXITY  = numDays × numDoctors × activeConstraints
+        //      Each evaluation is costlier when the schedule has more days, more
+        //      doctors, or more active constraints (weight > 0).
+        //      Reference: 30 days × 10 doctors × 12 constraints = 3 600.
+        //
+        //   3. PRICING TIER  — a server-side multiplier that scales the entire
+        //      formula to the desired price range:
+        //        free   → always €0 (beta / internal testing)
+        //        low    → ×0.15  (≈ €0.10 – €2)
+        //        medium → ×1.00  (≈ €1   – €10)
+        //        high   → ×5.00  (≈ €5   – €50)
+        //
+        // FORMULA
+        //   workRatio = (algoWork / refAlgoWork) × (envComplexity / refEnvComplexity)
+        //   rawPrice  = BASE_PRICE × workRatio^EXPONENT × tierMultiplier
+        //
+        //   The exponent (0.4) gives sublinear scaling: doubling all parameters
+        //   raises the price by ~32% rather than 100%, preventing extreme configs
+        //   from producing absurd prices.
+        //
+        //   A per-tier floor ensures there is always a minimum charge (except for
+        //   the free tier).
+
+        const PRICE_CONFIG = {
+            BASE_PRICE:    3.00,   // €  price at reference values, medium tier
+            EXPONENT:      0.40,   // sublinear scaling exponent
+            REF_ALGO_WORK: 1_000 * 3 * 500,  // 1 500 000
+            REF_ENV:       30 * 10 * 12,      // 3 600
+            TIERS: {
+                free:   { multiplier: 0,    floor: 0 },
+                low:    { multiplier: 0.15, floor: 0.10 },
+                medium: { multiplier: 1.00, floor: 0.50 },
+                high:   { multiplier: 5.00, floor: 2.50 }
+            }
+        };
+
+        const estimatePrice = () => {
+            if (!configState) return null;
+
+            const year  = Number(el.yearSelect.value);
+            const month = Number(el.monthSelect.value);
+            const numDays = new Date(year, month, 0).getDate(); // last day of selected month
+
+            const { populationSize, generationLimit, islandOptions, evaluatorWeights } = configState.algorithm;
+            const islands          = islandOptions?.islands || 1;
+            const numDoctors       = configState.doctors.length;
+            const activeConstraints = Object.values(evaluatorWeights || {}).filter(w => w > 0).length;
+
+            const algoWork     = populationSize * islands * generationLimit;
+            const envComplexity = numDays * numDoctors * Math.max(1, activeConstraints);
+            const workRatio    = (algoWork / PRICE_CONFIG.REF_ALGO_WORK) * (envComplexity / PRICE_CONFIG.REF_ENV);
+
+            const tier = PRICE_CONFIG.TIERS[configState.pricingTier] ?? PRICE_CONFIG.TIERS.free;
+            if (tier.multiplier === 0) return 0;
+
+            const raw = PRICE_CONFIG.BASE_PRICE * Math.pow(workRatio, PRICE_CONFIG.EXPONENT) * tier.multiplier;
+            return Math.max(tier.floor, raw);
+        };
+
+        const currencyFmt = new Intl.NumberFormat(locale, {style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        const updatePrice = () => {
+            const price = estimatePrice();
+            if (price === null) {
+                el.priceEstimate.classList.add('hidden');
+                return;
+            }
+            el.priceEstimate.classList.remove('hidden');
+            el.priceValue.textContent = price === 0 ? t.freeLabel : currencyFmt.format(price);
+        };
 
         const floatingTooltip = document.createElement('div');
         floatingTooltip.className = 'fixed z-50 max-w-xs rounded-md bg-slate-800 px-3 py-2 text-xs leading-relaxed text-white shadow-lg pointer-events-none';
