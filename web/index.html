@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DoctorPlan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ink: '#1f2933',
+                        line: '#d8dee7',
+                        mist: '#f6f8fb',
+                        pine: '#0f766e',
+                        coral: '#c2410c'
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="min-h-screen bg-mist text-ink antialiased">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+        <header class="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-wide text-pine">DoctorPlan</p>
+                <h1 id="page-title" class="mt-1 text-3xl font-semibold tracking-normal text-ink sm:text-4xl">On-duty schedule</h1>
+            </div>
+
+            <form id="schedule-form" class="grid gap-3 sm:grid-cols-[minmax(11rem,14rem)_minmax(16rem,20rem)_auto_auto] sm:items-end">
+                <div class="grid gap-1 text-sm font-medium text-slate-700">
+                    <span id="label-month">Month</span>
+                    <div class="flex gap-1.5">
+                        <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+                        <select id="year-select" class="h-11 w-24 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+                    </div>
+                </div>
+
+                <label class="grid gap-1 text-sm font-medium text-slate-700">
+                    API
+                    <input
+                        id="api-input"
+                        type="url"
+                        class="h-11 rounded-md border border-line bg-white px-3 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"
+                        value="http://127.0.0.1:3000"
+                        required
+                    >
+                </label>
+
+                <button
+                    id="generate-button"
+                    type="submit"
+                    class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                    Generate
+                </button>
+
+                <button
+                    id="stop-button"
+                    type="button"
+                    class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                >
+                    Stop
+                </button>
+            </form>
+        </header>
+
+        <section id="message" class="hidden mt-4 rounded-md border px-4 py-3 text-sm"></section>
+
+        <section id="progress-panel" class="hidden mt-4 rounded-md border border-line bg-white p-4">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p id="progress-title" class="text-sm font-semibold text-ink">Generating schedule</p>
+                    <p id="progress-detail" class="mt-1 text-sm text-slate-500">Preparing...</p>
+                </div>
+                <p id="progress-percent" class="text-sm font-semibold text-pine">0%</p>
+            </div>
+            <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-100">
+                <div id="progress-bar" class="h-full w-0 rounded-full bg-pine transition-all duration-300"></div>
+            </div>
+            <div id="eval-panel" class="hidden mt-3">
+                <p id="eval-detail" class="text-xs text-slate-500"></p>
+                <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div id="eval-bar" class="h-full w-0 rounded-full bg-pine/50 transition-all duration-200"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid flex-1 gap-5 py-5 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]">
+            <aside class="min-w-0 border-b border-line pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+                <div class="flex items-center justify-between">
+                    <h2 id="label-configuration" class="text-base font-semibold text-ink">Configuration</h2>
+                    <div class="flex items-center gap-2">
+                        <button
+                            id="discard-config"
+                            type="button"
+                            disabled
+                            class="rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Discard
+                        </button>
+                        <button
+                            id="save-config"
+                            type="button"
+                            disabled
+                            class="rounded-md bg-pine px-3 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <details class="group mt-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                        <span id="label-doctors">Doctors</span>
+                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                        </svg>
+                    </summary>
+                    <button
+                        id="add-doctor"
+                        type="button"
+                        class="mt-3 w-full rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"
+                    >
+                        Add doctor
+                    </button>
+                    <div id="config-doctors" class="mt-3 grid gap-3 max-h-96 overflow-y-auto pr-1"></div>
+                </details>
+
+                <details class="group mt-6">
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                        <span id="label-algorithm">Algorithm Parameters</span>
+                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                        </svg>
+                    </summary>
+                    <div id="algorithm-fields" class="mt-3 grid grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1"></div>
+                </details>
+
+                <details class="group mt-6">
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                        <span id="label-weights">Constraint Weights</span>
+                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                        </svg>
+                    </summary>
+                    <div id="weights-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
+                </details>
+            </aside>
+
+            <section class="min-w-0">
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-md border border-line bg-white p-4">
+                        <p id="label-score" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Score</p>
+                        <p id="score-value" class="mt-2 text-2xl font-semibold text-ink">-</p>
+                    </div>
+                    <div class="rounded-md border border-line bg-white p-4">
+                        <p id="label-mean" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Mean</p>
+                        <p id="mean-value" class="mt-2 text-2xl font-semibold text-ink">-</p>
+                    </div>
+                    <div class="rounded-md border border-line bg-white p-4">
+                        <p id="label-generation" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Generation</p>
+                        <p id="generation-value" class="mt-2 text-2xl font-semibold text-ink">-</p>
+                    </div>
+                </div>
+
+                <div id="chart-panel" class="hidden mt-5 rounded-md border border-line bg-white p-4">
+                    <canvas id="evolution-chart"></canvas>
+                </div>
+
+                <div class="mt-5 overflow-hidden rounded-md border border-line bg-white">
+                    <div class="flex items-center justify-between border-b border-line px-4 py-3">
+                        <h2 id="label-schedule" class="text-base font-semibold text-ink">Schedule</h2>
+                        <p id="schedule-count" class="text-sm text-slate-500">No duties</p>
+                    </div>
+                    <div id="schedule-empty" class="px-4 py-14 text-center text-sm text-slate-500">
+                        No schedule loaded.
+                    </div>
+                    <div id="schedule-grid" class="hidden grid grid-cols-1 divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3"></div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const el = {
+            form: document.querySelector('#schedule-form'),
+            monthSelect: document.querySelector('#month-select'),
+            yearSelect: document.querySelector('#year-select'),
+            api: document.querySelector('#api-input'),
+            button: document.querySelector('#generate-button'),
+            stopButton: document.querySelector('#stop-button'),
+            message: document.querySelector('#message'),
+            progressPanel: document.querySelector('#progress-panel'),
+            progressTitle: document.querySelector('#progress-title'),
+            progressDetail: document.querySelector('#progress-detail'),
+            progressPercent: document.querySelector('#progress-percent'),
+            progressBar: document.querySelector('#progress-bar'),
+            evalPanel: document.querySelector('#eval-panel'),
+            evalDetail: document.querySelector('#eval-detail'),
+            evalBar: document.querySelector('#eval-bar'),
+            score: document.querySelector('#score-value'),
+            mean: document.querySelector('#mean-value'),
+            generation: document.querySelector('#generation-value'),
+            chartPanel: document.querySelector('#chart-panel'),
+            evolutionChart: document.querySelector('#evolution-chart'),
+            scheduleCount: document.querySelector('#schedule-count'),
+            scheduleEmpty: document.querySelector('#schedule-empty'),
+            scheduleGrid: document.querySelector('#schedule-grid'),
+            addDoctor: document.querySelector('#add-doctor'),
+            discardConfig: document.querySelector('#discard-config'),
+            saveConfig: document.querySelector('#save-config'),
+            configAside: document.querySelector('aside'),
+            configDoctors: document.querySelector('#config-doctors'),
+            algorithmFields: document.querySelector('#algorithm-fields'),
+            weightsList: document.querySelector('#weights-list'),
+            pageTitle: document.querySelector('#page-title'),
+            labelMonth: document.querySelector('#label-month'),
+            labelConfiguration: document.querySelector('#label-configuration'),
+            labelDoctors: document.querySelector('#label-doctors'),
+            labelAlgorithm: document.querySelector('#label-algorithm'),
+            labelWeights: document.querySelector('#label-weights'),
+            labelScore: document.querySelector('#label-score'),
+            labelMean: document.querySelector('#label-mean'),
+            labelGeneration: document.querySelector('#label-generation'),
+            labelSchedule: document.querySelector('#label-schedule')
+        };
+
+        let activeJobId = null;
+        let chart = null;
+        let lastChartGeneration = -1;
+        let configState = null;
+
+        const locale = navigator.language;
+        const ui = {
+            en: {
+                pageTitle: 'On-duty schedule',
+                labelMonth: 'Month',
+                generate: 'Generate',
+                generating: 'Generating...',
+                stop: 'Stop',
+                stopping: 'Stopping...',
+                configuration: 'Configuration',
+                discard: 'Discard',
+                save: 'Save',
+                saving: 'Saving...',
+                doctors: 'Doctors',
+                addDoctor: 'Add doctor',
+                removeDoctor: 'Remove',
+                algorithmParameters: 'Algorithm Parameters',
+                constraintWeights: 'Constraint Weights',
+                fieldId: 'ID',
+                fieldName: 'Name',
+                fieldBackToBack: 'Back-to-back tolerance',
+                fieldUnavailableWeekdays: 'Unavailable weekdays',
+                fieldUnavailableDates: 'Unavailable dates',
+                fieldDesiredDutyDates: 'Desired duty dates',
+                fieldDesiredFreeDates: 'Desired free dates / offset',
+                fieldDutyOffset: 'Duty offset',
+                fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
+                labelScore: 'Score',
+                labelMean: 'Mean',
+                labelGeneration: 'Generation',
+                labelSchedule: 'Schedule',
+                noDuties: 'No duties',
+                duties: (n) => `${n} ${n === 1 ? 'duty' : 'duties'}`,
+                noSchedule: 'No schedule loaded.',
+                phaseDefault: 'Generating schedule',
+                phaseInitializing: 'Creating initial population',
+                phaseEvolving: 'Evolving candidates',
+                phaseCompleted: 'Completed',
+                phaseFailed: 'Failed',
+                phaseCancelled: 'Stopped',
+                preparing: 'Preparing...',
+                progressInitDetail: (current, total) => `${current} / ${total} individuals`,
+                progressEvolDetail: (current, total) => `Generation ${current} of ${total}`,
+                evalDetail: (current, total) => `Evaluating candidates: ${current} / ${total}`,
+                chartBest: 'Best score',
+                chartMean: 'Mean score',
+                chartGeneration: 'Generation',
+                chartScore: 'Score',
+                bestSoFar: 'Best so far',
+                configSaved: 'Configuration saved.',
+                stoppedEarly: 'Stopped before the first schedule was evaluated.',
+                stoppedWithResult: (month) => `Stopped. Showing the best schedule found for ${month}.`,
+                generated: (month) => `Schedule generated for ${month}.`,
+                constraints: {
+                    commonNotConsecutiveWeekdays: 'Common consecutive weekdays',
+                    personalNotAvailableWeekdays: 'Doctor unavailable weekdays',
+                    personalNotAvailableDates: 'Doctor unavailable dates',
+                    avoidBackToBack: 'Avoid back-to-back duties',
+                    totalDutyDaysBalance: 'Total duty balance',
+                    personalDesiredFreeDates: 'Desired free dates',
+                    personalDesiredDutyDates: 'Desired duty dates',
+                    personalDutiesDistribution: 'Duty distribution',
+                    maxPossibleFreeWeekends: 'Max free weekends',
+                    weekendDaysBalance: 'Weekend balance',
+                    freeWeekendsBalance: 'Free weekends balance',
+                    isolatedWeekendDaysBalance: 'Isolated weekend balance'
+                },
+                paramDescriptions: {
+                    populationSize: 'Number of candidate schedules in each generation.',
+                    generationLimit: 'Maximum number of generations before stopping.',
+                    stopScore: 'Score (0–100) at which evolution stops early.',
+                    elitism: 'Top candidates carried unchanged to the next generation.',
+                    mutationProbability: 'Probability (0–1) that a candidate is mutated.',
+                    mutationAggresivity: 'Number of changes a single mutation introduces.',
+                    tournamentSelectionRatio: 'Selection pressure in tournament selection (0–1).',
+                    offsetRatio: 'Weight of duty-offset adjustments in the score.',
+                    'islandOptions.islands': 'Number of isolated sub-populations.',
+                    'islandOptions.migration': 'Individuals exchanged between islands each epoch.',
+                    'islandOptions.epoch': 'Generations between island migrations.'
+                },
+                constraintDescriptions: {
+                    commonNotConsecutiveWeekdays: 'Penalises consecutive weekday duties shared across all doctors.',
+                    personalNotAvailableWeekdays: 'Penalises assigning a doctor on their unavailable weekdays.',
+                    personalNotAvailableDates: 'Penalises assigning a doctor on dates they marked unavailable.',
+                    avoidBackToBack: 'Penalises consecutive duties for the same doctor.',
+                    totalDutyDaysBalance: 'Rewards equal total duty count across all doctors.',
+                    personalDesiredFreeDates: 'Penalises duties on a doctor\'s preferred free dates.',
+                    personalDesiredDutyDates: 'Rewards duties on a doctor\'s preferred duty dates.',
+                    personalDutiesDistribution: 'Rewards evenly spread duties throughout the month per doctor.',
+                    maxPossibleFreeWeekends: 'Rewards maximising free weekends for all doctors.',
+                    weekendDaysBalance: 'Rewards equal distribution of weekend duties among doctors.',
+                    freeWeekendsBalance: 'Rewards equal number of free weekends among doctors.',
+                    isolatedWeekendDaysBalance: 'Rewards equal distribution of isolated weekend day duties.'
+                }
+            },
+            es: {
+                pageTitle: 'Calendario de guardias',
+                labelMonth: 'Mes',
+                generate: 'Generar',
+                generating: 'Generando...',
+                stop: 'Parar',
+                stopping: 'Parando...',
+                configuration: 'Configuración',
+                discard: 'Descartar',
+                save: 'Guardar',
+                saving: 'Guardando...',
+                doctors: 'Médicos',
+                addDoctor: 'Añadir médico',
+                removeDoctor: 'Eliminar',
+                algorithmParameters: 'Parámetros del algoritmo',
+                constraintWeights: 'Pesos de restricciones',
+                fieldId: 'ID',
+                fieldName: 'Nombre',
+                fieldBackToBack: 'Tolerancia guardias consecutivas',
+                fieldUnavailableWeekdays: 'Días no disponibles',
+                fieldUnavailableDates: 'Fechas no disponibles',
+                fieldDesiredDutyDates: 'Fechas de guardia deseadas',
+                fieldDesiredFreeDates: 'Fechas libres deseadas / compensación',
+                fieldDutyOffset: 'Compensación',
+                fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
+                labelScore: 'Puntuación',
+                labelMean: 'Media',
+                labelGeneration: 'Generación',
+                labelSchedule: 'Calendario',
+                noDuties: 'Sin guardias',
+                duties: (n) => `${n} ${n === 1 ? 'guardia' : 'guardias'}`,
+                noSchedule: 'No hay calendario cargado.',
+                phaseDefault: 'Generando calendario',
+                phaseInitializing: 'Creando población inicial',
+                phaseEvolving: 'Evolucionando candidatos',
+                phaseCompleted: 'Completado',
+                phaseFailed: 'Error',
+                phaseCancelled: 'Detenido',
+                preparing: 'Preparando...',
+                progressInitDetail: (current, total) => `${current} / ${total} individuos`,
+                progressEvolDetail: (current, total) => `Generación ${current} de ${total}`,
+                evalDetail: (current, total) => `Evaluando candidatos: ${current} / ${total}`,
+                chartBest: 'Mejor puntuación',
+                chartMean: 'Puntuación media',
+                chartGeneration: 'Generación',
+                chartScore: 'Puntuación',
+                bestSoFar: 'Mejor hasta ahora',
+                configSaved: 'Configuración guardada.',
+                stoppedEarly: 'Detenido antes de evaluar el primer calendario.',
+                stoppedWithResult: (month) => `Detenido. Mostrando el mejor calendario encontrado para ${month}.`,
+                generated: (month) => `Calendario generado para ${month}.`,
+                constraints: {
+                    commonNotConsecutiveWeekdays: 'Días laborables consecutivos comunes',
+                    personalNotAvailableWeekdays: 'Días no disponibles del médico',
+                    personalNotAvailableDates: 'Fechas no disponibles del médico',
+                    avoidBackToBack: 'Evitar guardias consecutivas',
+                    totalDutyDaysBalance: 'Balance total de guardias',
+                    personalDesiredFreeDates: 'Fechas libres deseadas',
+                    personalDesiredDutyDates: 'Fechas de guardia deseadas',
+                    personalDutiesDistribution: 'Distribución de guardias',
+                    maxPossibleFreeWeekends: 'Máx. fines de semana libres',
+                    weekendDaysBalance: 'Balance de fines de semana',
+                    freeWeekendsBalance: 'Balance de fines de semana libres',
+                    isolatedWeekendDaysBalance: 'Balance de fines de semana aislados'
+                },
+                paramDescriptions: {
+                    populationSize: 'Número de calendarios candidatos en cada generación.',
+                    generationLimit: 'Número máximo de generaciones antes de parar.',
+                    stopScore: 'Puntuación (0–100) a la que se detiene la evolución.',
+                    elitism: 'Mejores candidatos que pasan sin cambios a la siguiente generación.',
+                    mutationProbability: 'Probabilidad (0–1) de que un candidato mute.',
+                    mutationAggresivity: 'Número de cambios que introduce una mutación.',
+                    tournamentSelectionRatio: 'Presión de selección en torneo (0–1).',
+                    offsetRatio: 'Peso de los ajustes de compensación en la puntuación.',
+                    'islandOptions.islands': 'Número de subpoblaciones aisladas.',
+                    'islandOptions.migration': 'Individuos intercambiados entre islas cada época.',
+                    'islandOptions.epoch': 'Generaciones entre migraciones de islas.'
+                },
+                constraintDescriptions: {
+                    commonNotConsecutiveWeekdays: 'Penaliza días de la semana consecutivos asignados a todos los médicos.',
+                    personalNotAvailableWeekdays: 'Penaliza guardia en días no disponibles del médico.',
+                    personalNotAvailableDates: 'Penaliza guardia en fechas marcadas como no disponibles.',
+                    avoidBackToBack: 'Penaliza guardias consecutivas para el mismo médico.',
+                    totalDutyDaysBalance: 'Premia igualar el número total de guardias entre médicos.',
+                    personalDesiredFreeDates: 'Penaliza guardia en fechas libres deseadas por el médico.',
+                    personalDesiredDutyDates: 'Premia guardia en fechas de guardia deseadas por el médico.',
+                    personalDutiesDistribution: 'Premia distribuir guardias uniformemente a lo largo del mes.',
+                    maxPossibleFreeWeekends: 'Premia maximizar los fines de semana libres de todos los médicos.',
+                    weekendDaysBalance: 'Premia igualar las guardias de fin de semana entre médicos.',
+                    freeWeekendsBalance: 'Premia igualar el número de fines de semana libres entre médicos.',
+                    isolatedWeekendDaysBalance: 'Premia igualar las guardias de días de fin de semana aislados.'
+                }
+            }
+        };
+        const t = ui[locale.startsWith('es') ? 'es' : 'en'];
+
+        document.documentElement.lang = locale;
+        el.pageTitle.textContent = t.pageTitle;
+        el.labelMonth.textContent = t.labelMonth;
+        el.labelConfiguration.textContent = t.configuration;
+        el.labelDoctors.textContent = t.doctors;
+        el.labelAlgorithm.textContent = t.algorithmParameters;
+        el.labelWeights.textContent = t.constraintWeights;
+        el.labelScore.textContent = t.labelScore;
+        el.labelMean.textContent = t.labelMean;
+        el.labelGeneration.textContent = t.labelGeneration;
+        el.labelSchedule.textContent = t.labelSchedule;
+        el.button.textContent = t.generate;
+        el.stopButton.textContent = t.stop;
+        el.discardConfig.textContent = t.discard;
+        el.saveConfig.textContent = t.save;
+        el.addDoctor.textContent = t.addDoctor;
+        el.scheduleEmpty.textContent = t.noSchedule;
+        el.scheduleCount.textContent = t.noDuties;
+        el.progressTitle.textContent = t.phaseDefault;
+        el.progressDetail.textContent = t.preparing;
+
+        if (location.protocol.startsWith('http')) {
+            el.api.value = location.origin;
+        }
+
+        const today = new Date();
+        const monthFmt = new Intl.DateTimeFormat(locale, {month: 'long'});
+        const monthNames = Array.from({length: 12}, (_, i) => monthFmt.format(new Date(2000, i, 1)));
+        monthNames.forEach((name, i) => {
+            const opt = document.createElement('option');
+            opt.value = String(i + 1).padStart(2, '0');
+            opt.textContent = name;
+            el.monthSelect.appendChild(opt);
+        });
+        const currentYear = today.getFullYear();
+        for (let y = currentYear - 1; y <= currentYear + 2; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            el.yearSelect.appendChild(opt);
+        }
+        el.monthSelect.value = String(today.getMonth() + 1).padStart(2, '0');
+        el.yearSelect.value = currentYear;
+
+        const getSelectedMonth = () => `${el.yearSelect.value}-${el.monthSelect.value}`;
+
+        const colors = [
+            'border-l-pine',
+            'border-l-coral',
+            'border-l-sky-600',
+            'border-l-amber-600',
+            'border-l-fuchsia-700',
+            'border-l-lime-700'
+        ];
+
+        const weekdayFmt = new Intl.DateTimeFormat(locale, {weekday: 'short'});
+        const weekdays = Array.from({length: 7}, (_, i) => {
+            const d = new Date(2024, 0, 1 + i); // 2024-01-01 es lunes
+            return weekdayFmt.format(d);
+        });
+
+        const algorithmFieldNames = [
+            'populationSize',
+            'generationLimit',
+            'stopScore',
+            'elitism',
+            'mutationProbability',
+            'mutationAggresivity',
+            'tournamentSelectionRatio',
+            'offsetRatio',
+            'islandOptions.islands',
+            'islandOptions.migration',
+            'islandOptions.epoch'
+        ];
+
+
+        const infoIcon = (description) => description ? `
+            <span data-tooltip="${description.replaceAll('"', '&quot;')}" class="inline-flex shrink-0 cursor-help align-text-bottom">
+                <svg class="pointer-events-none h-3.5 w-3.5 text-slate-400 hover:text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z" clip-rule="evenodd"/>
+                </svg>
+            </span>` : '';
+
+        const escapeHtml = (value) =>
+            String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;');
+
+        const datesText = (dates, doctorId) =>
+            (dates?.[doctorId] || []).join('\n');
+
+        const parseDatesText = (value) =>
+            value.split(/[\n,]+/).map(item => item.trim()).filter(Boolean);
+
+        const setBusy = (busy) => {
+            el.button.disabled = busy;
+            el.button.textContent = busy ? t.generating : t.generate;
+            el.stopButton.classList.toggle('hidden', !busy);
+            el.stopButton.disabled = !busy;
+            el.stopButton.textContent = t.stop;
+        };
+
+        const resetProgress = () => {
+            el.progressPanel.classList.add('hidden');
+            el.progressTitle.textContent = t.phaseDefault;
+            el.progressDetail.textContent = t.preparing;
+            el.progressPercent.textContent = '0%';
+            el.progressBar.style.width = '0%';
+            el.evalPanel.classList.add('hidden');
+            el.evalBar.style.width = '0%';
+        };
+
+        const initChart = () => {
+            if (chart) chart.destroy();
+            lastChartGeneration = -1;
+            el.chartPanel.classList.add('hidden');
+            chart = new Chart(el.evolutionChart, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: t.chartBest,
+                            data: [],
+                            borderColor: '#0f766e',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.2
+                        },
+                        {
+                            label: t.chartMean,
+                            data: [],
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { title: { display: true, text: t.chartGeneration } },
+                        y: { min: 0, max: 100, title: { display: true, text: t.chartScore } }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                title: items => `${t.chartGeneration} ${items[0].label}`
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const updateChart = (generation, bestScore, mean) => {
+            if (!chart || generation === lastChartGeneration) return;
+            lastChartGeneration = generation;
+            el.chartPanel.classList.remove('hidden');
+            chart.data.labels.push(generation);
+            chart.data.datasets[0].data.push(bestScore);
+            chart.data.datasets[1].data.push(mean);
+            chart.update('none');
+        };
+
+        const renderProgress = (job) => {
+            const progress = job.progress || {};
+            const percent = Math.max(0, Math.min(progress.percent || 0, 100));
+            const phase = progress.phase || job.status;
+            const phaseLabel = {
+                initializing: t.phaseInitializing,
+                evolving: t.phaseEvolving,
+                completed: t.phaseCompleted,
+                failed: t.phaseFailed,
+                cancelled: t.phaseCancelled
+            }[phase] || t.phaseDefault;
+
+            el.progressPanel.classList.remove('hidden');
+            el.progressTitle.textContent = phaseLabel;
+            if (phase === 'initializing') {
+                el.progressDetail.textContent = t.progressInitDetail(progress.current || 0, progress.total || 0);
+                el.evalPanel.classList.add('hidden');
+            } else if (phase === 'evolving') {
+                el.progressDetail.textContent = t.progressEvolDetail(progress.current || 0, progress.total || 0);
+                if (progress.evalCurrent != null) {
+                    const evalPct = Math.round((progress.evalCurrent / progress.evalTotal) * 100);
+                    el.evalPanel.classList.remove('hidden');
+                    el.evalDetail.textContent = t.evalDetail(progress.evalCurrent, progress.evalTotal);
+                    el.evalBar.style.width = `${evalPct}%`;
+                }
+            } else {
+                el.progressDetail.textContent = '';
+                el.evalPanel.classList.add('hidden');
+            }
+            el.progressPercent.textContent = `${percent}%`;
+            el.progressBar.style.width = `${percent}%`;
+
+            if (typeof progress.bestScore === 'number') {
+                el.score.textContent = progress.bestScore.toFixed(2);
+            }
+            if (typeof progress.mean === 'number') {
+                el.mean.textContent = progress.mean.toFixed(2);
+            }
+            if (phase === 'evolving') {
+                el.generation.textContent = progress.current ?? '-';
+                if (typeof progress.bestScore === 'number' && typeof progress.mean === 'number') {
+                    updateChart(progress.current, progress.bestScore, progress.mean);
+                }
+            }
+        };
+
+        const showMessage = ({type, text}) => {
+            if (!text) {
+                el.message.className = 'hidden mt-4 rounded-md border px-4 py-3 text-sm';
+                el.message.textContent = '';
+                return;
+            }
+
+            const style = type === 'error'
+                ? 'border-red-200 bg-red-50 text-red-800'
+                : 'border-teal-200 bg-teal-50 text-teal-800';
+
+            el.message.className = `mt-4 rounded-md border px-4 py-3 text-sm ${style}`;
+            el.message.textContent = text;
+        };
+
+        const request = async (path, options = {}) => {
+            const apiBase = el.api.value.replace(/\/$/, '');
+            const response = await fetch(`${apiBase}${path}`, {
+                headers: {'content-type': 'application/json'},
+                ...options
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const details = Array.isArray(payload.details) ? ` ${payload.details.join(' ')}` : '';
+                throw new Error(`${payload.error || 'Request failed'}.${details}`);
+            }
+
+            return payload;
+        };
+
+        const setDirty = (dirty) => {
+            el.saveConfig.disabled = !dirty;
+            el.discardConfig.disabled = !dirty;
+        };
+
+        const renderConfig = () => {
+            if (!configState) return;
+
+            el.configDoctors.innerHTML = configState.doctors.map((doctor, index) => `
+                <div class="doctor-config rounded-md border border-line bg-white" data-index="${index}">
+                    <div class="doctor-header flex cursor-pointer items-center justify-between gap-3 px-4 py-3">
+                        <span class="min-w-0">
+                            <span class="block truncate text-sm font-semibold text-ink">${escapeHtml(doctor.name || 'Unnamed doctor')}</span>
+                            <span class="mt-0.5 block truncate text-xs text-slate-500">${escapeHtml(doctor.id || 'missing-id')}</span>
+                        </span>
+                        <button type="button" class="remove-doctor shrink-0 rounded p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50" title="${t.removeDoctor}">
+                            <svg class="pointer-events-none h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193v-.443A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="doctor-body hidden border-t border-line p-4">
+                        <div class="grid min-w-0 grid-cols-1 gap-3">
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldId}
+                                <input class="doctor-id h-10 min-w-0 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" value="${escapeHtml(doctor.id)}">
+                            </label>
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldName}
+                                <input class="doctor-name h-10 min-w-0 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" value="${escapeHtml(doctor.name)}">
+                            </label>
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldBackToBack}
+                                <input class="doctor-tolerance h-10 min-w-0 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" type="number" step="0.01" min="0" max="1" value="${doctor.backToBackTolerance ?? ''}">
+                            </label>
+                        </div>
+
+                        <div class="mt-3 grid min-w-0 gap-3">
+                            <fieldset class="rounded-md border border-line p-3">
+                                <legend class="px-1 text-sm font-medium text-slate-700">${t.fieldUnavailableWeekdays}</legend>
+                                <div class="mt-2 grid grid-cols-2 gap-2">
+                                    ${weekdays.map(weekday => `
+                                        <label class="flex items-center gap-2 text-sm text-slate-700">
+                                            <input class="doctor-weekday rounded border-line text-pine focus:ring-pine/30" type="checkbox" value="${weekday}" ${doctor.notAvailableWeekdays?.includes(weekday) ? 'checked' : ''}>
+                                            ${weekday}
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </fieldset>
+
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldUnavailableDates}
+                                <textarea class="doctor-not-available h-28 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.notAvailableDates, doctor.id))}</textarea>
+                            </label>
+
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldDesiredDutyDates}
+                                <textarea class="doctor-desired-duty h-28 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.desiredDutyDates, doctor.id))}</textarea>
+                            </label>
+
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                ${t.fieldDesiredFreeDates}
+                                <textarea class="doctor-desired-free h-20 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.desiredFreeDates, doctor.id))}</textarea>
+                                <span class="flex items-center gap-1 text-xs text-slate-500">${t.fieldDutyOffset}${infoIcon(t.fieldDutyOffsetDesc)}</span>
+                                <input class="doctor-offset h-10 min-w-0 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" type="number" step="0.1" placeholder="${t.fieldDutyOffset}" value="${configState.offsets?.[doctor.id] ?? ''}">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            el.algorithmFields.innerHTML = algorithmFieldNames.map(name => {
+                const [root, child] = name.split('.');
+                const value = child ? configState.algorithm[root]?.[child] : configState.algorithm[name];
+                return `
+                    <label class="grid gap-1 text-sm font-medium text-slate-700">
+                        <span class="flex items-center gap-1">${name}${infoIcon(t.paramDescriptions?.[name])}</span>
+                        <input class="algorithm-field h-10 rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" data-name="${name}" type="number" step="0.001" value="${value ?? ''}">
+                    </label>
+                `;
+            }).join('');
+
+            setDirty(false);
+
+            el.weightsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {}).map(([key, value]) => `
+                <label class="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-line bg-white px-3 py-2 text-sm">
+                    <span>
+                        <span class="flex items-center gap-1 font-medium text-ink">${t.constraints[key] || key}${infoIcon(t.constraintDescriptions?.[key])}</span>
+                        <span class="mt-0.5 block text-xs text-slate-500">${key}</span>
+                    </span>
+                    <input class="weight-field h-10 rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" data-name="${key}" type="number" step="0.001" value="${value}">
+                </label>
+            `).join('');
+        };
+
+        const loadConfig = async () => {
+            configState = await request('/api/config');
+            renderConfig();
+        };
+
+        const waitForJob = async (jobId) => {
+            while (true) {
+                const job = await request(`/api/schedule-jobs/${jobId}`);
+                renderProgress(job);
+
+                if (job.latestResult) {
+                    renderSchedule(job.latestResult, true);
+                }
+
+                if (job.status === 'completed') {
+                    return job.result;
+                }
+
+                if (job.status === 'cancelled') {
+                    if (!job.result) {
+                        return {
+                            month: job.month,
+                            schedule: [],
+                            score: null,
+                            mean: null,
+                            generation: null,
+                            wasStopped: true,
+                            stoppedBeforeResult: true
+                        };
+                    }
+                    return {
+                        ...job.result,
+                        wasStopped: true
+                    };
+                }
+
+                if (job.status === 'failed') {
+                    throw new Error(job.error || 'Schedule generation failed');
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        };
+
+        const collectConfig = () => {
+            const next = {
+                doctors: [],
+                dates: {
+                    notAvailableDates: {},
+                    desiredDutyDates: {},
+                    desiredFreeDates: {}
+                },
+                offsets: {},
+                algorithm: {
+                    ...configState.algorithm,
+                    islandOptions: {...configState.algorithm.islandOptions},
+                    evaluatorWeights: {...configState.algorithm.evaluatorWeights}
+                }
+            };
+
+            document.querySelectorAll('.doctor-config').forEach(row => {
+                const doctor = {
+                    id: row.querySelector('.doctor-id').value.trim(),
+                    name: row.querySelector('.doctor-name').value.trim(),
+                    notAvailableWeekdays: [...row.querySelectorAll('.doctor-weekday:checked')].map(input => input.value)
+                };
+                const tolerance = row.querySelector('.doctor-tolerance').value;
+                if (tolerance !== '') doctor.backToBackTolerance = Number(tolerance);
+
+                if (!doctor.id || !doctor.name) return;
+                next.doctors.push(doctor);
+
+                const notAvailable = parseDatesText(row.querySelector('.doctor-not-available').value);
+                const desiredDuty = parseDatesText(row.querySelector('.doctor-desired-duty').value);
+                const desiredFree = parseDatesText(row.querySelector('.doctor-desired-free').value);
+                const offset = row.querySelector('.doctor-offset').value;
+
+                if (notAvailable.length) next.dates.notAvailableDates[doctor.id] = notAvailable;
+                if (desiredDuty.length) next.dates.desiredDutyDates[doctor.id] = desiredDuty;
+                if (desiredFree.length) next.dates.desiredFreeDates[doctor.id] = desiredFree;
+                if (offset !== '') next.offsets[doctor.id] = Number(offset);
+            });
+
+            document.querySelectorAll('.algorithm-field').forEach(input => {
+                const [root, child] = input.dataset.name.split('.');
+                if (child) {
+                    next.algorithm[root][child] = Number(input.value);
+                } else {
+                    next.algorithm[root] = Number(input.value);
+                }
+            });
+
+            document.querySelectorAll('.weight-field').forEach(input => {
+                next.algorithm.evaluatorWeights[input.dataset.name] = Number(input.value);
+            });
+
+            return next;
+        };
+
+        const doctorColor = (doctorId, schedule) => {
+            const ids = [...new Set(schedule.map(item => item.doctor.id))];
+            return colors[Math.max(0, ids.indexOf(doctorId)) % colors.length];
+        };
+
+        const renderSchedule = (payload, provisional = false) => {
+            el.labelSchedule.textContent = provisional ? t.bestSoFar : t.labelSchedule;
+            const schedule = payload.schedule || [];
+
+            el.score.textContent = payload.score === null ? '-' : Number(payload.score).toFixed(2);
+            el.mean.textContent = payload.mean === null ? '-' : Number(payload.mean).toFixed(2);
+            if (!provisional) el.generation.textContent = payload.generation ?? '-';
+            el.scheduleCount.textContent = t.duties(schedule.length);
+
+            if (schedule.length === 0) {
+                el.scheduleEmpty.classList.remove('hidden');
+                el.scheduleGrid.classList.add('hidden');
+                el.scheduleGrid.innerHTML = '';
+                return;
+            }
+
+            el.scheduleEmpty.classList.add('hidden');
+            el.scheduleGrid.classList.remove('hidden');
+            el.scheduleGrid.innerHTML = schedule.map(item => `
+                <article class="border-l-4 ${doctorColor(item.doctor.id, schedule)} p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-ink">${new Date(`${item.date}T00:00:00`).toLocaleDateString(undefined, {day: '2-digit', month: 'short'})}</p>
+                            <p class="mt-1 text-xs uppercase tracking-wide text-slate-500">${item.weekday}</p>
+                        </div>
+                        <div class="min-w-0 text-right">
+                            <p class="truncate text-sm font-semibold text-ink">${item.doctor.name}</p>
+                            <p class="mt-1 text-xs text-slate-500">${item.doctor.id}</p>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        };
+
+        el.form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            showMessage({text: ''});
+            resetProgress();
+            initChart();
+
+            try {
+                const job = await request('/api/schedule-jobs', {
+                    method: 'POST',
+                    body: JSON.stringify({month: getSelectedMonth()})
+                });
+                activeJobId = job.id;
+                renderProgress(job);
+
+                const payload = await waitForJob(job.id);
+                renderSchedule(payload);
+                showMessage({
+                    type: 'success',
+                    text: payload.wasStopped
+                        ? payload.stoppedBeforeResult
+                            ? t.stoppedEarly
+                            : t.stoppedWithResult(payload.month)
+                        : t.generated(payload.month)
+                });
+            } catch (err) {
+                showMessage({type: 'error', text: err.message});
+            } finally {
+                activeJobId = null;
+                setBusy(false);
+            }
+        });
+
+        el.stopButton.addEventListener('click', async () => {
+            if (!activeJobId) return;
+
+            el.stopButton.disabled = true;
+            el.stopButton.textContent = 'Stopping...';
+
+            try {
+                const job = await request(`/api/schedule-jobs/${activeJobId}/cancel`, {
+                    method: 'POST'
+                });
+                renderProgress(job);
+            } catch (err) {
+                showMessage({type: 'error', text: err.message});
+                el.stopButton.disabled = false;
+                el.stopButton.textContent = 'Stop';
+            }
+        });
+
+        el.addDoctor.addEventListener('click', () => {
+            configState = collectConfig();
+            const index = configState.doctors.length + 1;
+            configState.doctors.push({
+                id: `doctor${index}`,
+                name: `Doctor ${index}`,
+                notAvailableWeekdays: [],
+                backToBackTolerance: 0.5
+            });
+            renderConfig();
+            setDirty(true);
+        });
+
+        el.configAside.addEventListener('input', () => setDirty(true));
+        el.configAside.addEventListener('change', () => setDirty(true));
+
+        el.configDoctors.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-doctor')) {
+                event.target.closest('.doctor-config')?.remove();
+                setDirty(true);
+                return;
+            }
+            const header = event.target.closest('.doctor-header');
+            if (header) {
+                header.nextElementSibling.classList.toggle('hidden');
+            }
+        });
+
+        el.discardConfig.addEventListener('click', () => {
+            const openDetails = new Set(
+                [...document.querySelectorAll('aside details')].flatMap((d, i) => d.open ? [i] : [])
+            );
+            const openDoctors = new Set(
+                [...document.querySelectorAll('.doctor-config')].flatMap((card, i) =>
+                    !card.querySelector('.doctor-body').classList.contains('hidden') ? [i] : []
+                )
+            );
+
+            renderConfig();
+            showMessage({text: ''});
+
+            [...document.querySelectorAll('aside details')].forEach((d, i) => {
+                if (openDetails.has(i)) d.open = true;
+            });
+            document.querySelectorAll('.doctor-config').forEach((card, i) => {
+                if (openDoctors.has(i)) card.querySelector('.doctor-body').classList.remove('hidden');
+            });
+        });
+
+        el.saveConfig.addEventListener('click', async () => {
+            showMessage({text: ''});
+            el.saveConfig.disabled = true;
+            el.saveConfig.textContent = t.saving;
+
+            try {
+                configState = await request('/api/config', {
+                    method: 'PUT',
+                    body: JSON.stringify(collectConfig())
+                });
+                renderConfig();
+                showMessage({type: 'success', text: t.configSaved});
+            } catch (err) {
+                showMessage({type: 'error', text: err.message});
+            } finally {
+                el.saveConfig.disabled = false;
+                el.saveConfig.textContent = t.save;
+            }
+        });
+
+        const floatingTooltip = document.createElement('div');
+        floatingTooltip.className = 'fixed z-50 max-w-xs rounded-md bg-slate-800 px-3 py-2 text-xs leading-relaxed text-white shadow-lg pointer-events-none';
+        floatingTooltip.style.display = 'none';
+        document.body.appendChild(floatingTooltip);
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (!target) return;
+            floatingTooltip.textContent = target.dataset.tooltip;
+            floatingTooltip.style.display = 'block';
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            if (!e.relatedTarget?.closest('[data-tooltip]')) {
+                floatingTooltip.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (floatingTooltip.style.display === 'none') return;
+            const x = e.clientX + 14;
+            const y = e.clientY + 14;
+            const w = floatingTooltip.offsetWidth;
+            const h = floatingTooltip.offsetHeight;
+            floatingTooltip.style.left = `${Math.min(x, window.innerWidth - w - 8)}px`;
+            floatingTooltip.style.top = `${Math.min(y, window.innerHeight - h - 8)}px`;
+        });
+
+        loadConfig().catch(err => showMessage({type: 'error', text: err.message}));
+    </script>
+</body>
+</html>
