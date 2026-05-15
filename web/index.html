@@ -30,42 +30,55 @@
                 <h1 id="page-title" class="mt-1 text-3xl font-semibold tracking-normal text-ink sm:text-4xl">On-duty schedule</h1>
             </div>
 
-            <form id="schedule-form" class="grid gap-3 sm:grid-cols-[minmax(11rem,14rem)_minmax(16rem,20rem)_auto_auto] sm:items-end">
-                <div class="grid gap-1 text-sm font-medium text-slate-700">
-                    <span id="label-month">Month</span>
-                    <div class="flex gap-1.5">
-                        <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
-                        <select id="year-select" class="h-11 w-24 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+            <div class="flex flex-col gap-2 sm:items-end">
+                <form id="schedule-form" class="flex flex-wrap items-end gap-3">
+                    <div class="grid gap-1 text-sm font-medium text-slate-700">
+                        <span id="label-month">Month</span>
+                        <div class="flex gap-1.5">
+                            <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+                            <select id="year-select" class="h-11 w-24 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+                        </div>
                     </div>
-                </div>
 
-                <label class="grid gap-1 text-sm font-medium text-slate-700">
-                    API
-                    <input
-                        id="api-input"
-                        type="url"
-                        class="h-11 rounded-md border border-line bg-white px-3 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"
-                        value="http://127.0.0.1:3000"
-                        required
+                    <button
+                        id="generate-button"
+                        type="submit"
+                        class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
                     >
-                </label>
+                        Generate
+                    </button>
 
-                <button
-                    id="generate-button"
-                    type="submit"
-                    class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                    Generate
-                </button>
+                    <button
+                        id="stop-button"
+                        type="button"
+                        class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                    >
+                        Stop
+                    </button>
 
-                <button
-                    id="stop-button"
-                    type="button"
-                    class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
-                >
-                    Stop
-                </button>
-            </form>
+                    <button
+                        id="api-toggle"
+                        type="button"
+                        class="flex h-11 w-11 items-center justify-center rounded-md border border-line bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none focus:ring-4 focus:ring-pine/20"
+                    >
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 0 1-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 0 1 .947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 0 1 2.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 0 1 2.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 0 1 .947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 0 1-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 0 1-2.287-.947ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div id="api-panel" class="hidden w-full sm:max-w-xs">
+                    <label class="grid gap-1 text-sm font-medium text-slate-700">
+                        <span id="label-api">API</span>
+                        <input
+                            id="api-input"
+                            type="url"
+                            class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
+                            value="http://127.0.0.1:3000"
+                        >
+                    </label>
+                </div>
+            </div>
         </header>
 
         <section id="message" class="hidden mt-4 rounded-md border px-4 py-3 text-sm"></section>
@@ -226,7 +239,10 @@
             labelScore: document.querySelector('#label-score'),
             labelMean: document.querySelector('#label-mean'),
             labelGeneration: document.querySelector('#label-generation'),
-            labelSchedule: document.querySelector('#label-schedule')
+            labelSchedule: document.querySelector('#label-schedule'),
+            labelApi: document.querySelector('#label-api'),
+            apiToggle: document.querySelector('#api-toggle'),
+            apiPanel: document.querySelector('#api-panel')
         };
 
         let activeJobId = null;
@@ -261,6 +277,8 @@
                 fieldDesiredFreeDates: 'Desired free dates / offset',
                 fieldDutyOffset: 'Duty offset',
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
+                labelApi: 'API endpoint',
+                apiToggle: 'API settings',
                 labelScore: 'Score',
                 labelMean: 'Mean',
                 labelGeneration: 'Generation',
@@ -354,6 +372,8 @@
                 fieldDesiredFreeDates: 'Fechas libres deseadas / compensación',
                 fieldDutyOffset: 'Compensación',
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
+                labelApi: 'Endpoint API',
+                apiToggle: 'Ajustes de API',
                 labelScore: 'Puntuación',
                 labelMean: 'Media',
                 labelGeneration: 'Generación',
@@ -436,6 +456,8 @@
         el.labelMean.textContent = t.labelMean;
         el.labelGeneration.textContent = t.labelGeneration;
         el.labelSchedule.textContent = t.labelSchedule;
+        el.labelApi.textContent = t.labelApi;
+        el.apiToggle.title = t.apiToggle;
         el.button.textContent = t.generate;
         el.stopButton.textContent = t.stop;
         el.discardConfig.textContent = t.discard;
@@ -955,6 +977,10 @@
                 el.stopButton.disabled = false;
                 el.stopButton.textContent = 'Stop';
             }
+        });
+
+        el.apiToggle.addEventListener('click', () => {
+            el.apiPanel.classList.toggle('hidden');
         });
 
         el.addDoctor.addEventListener('click', () => {
