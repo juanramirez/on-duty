@@ -821,7 +821,9 @@
             el.pricingTierBadge.textContent = tierLabel ?? '';
             el.pricingTierBadge.classList.toggle('hidden', !tierLabel);
             if (configState.version) {
-                el.versionBadge.textContent = configState.version;
+                const major = parseInt(configState.version, 10);
+                const versionLabel = major >= 1 ? `v${configState.version}` : 'beta';
+                el.versionBadge.textContent = versionLabel;
                 el.versionBadge.classList.remove('hidden');
                 el.appVersion.textContent = configState.version;
             }
