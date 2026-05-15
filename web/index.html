@@ -1027,78 +1027,6 @@
             el.apiPanel.classList.toggle('hidden');
         });
 
-        el.monthSelect.addEventListener('change', updatePrice);
-        el.yearSelect.addEventListener('change', updatePrice);
-
-        el.addDoctor.addEventListener('click', () => {
-            configState = collectConfig();
-            const index = configState.doctors.length + 1;
-            configState.doctors.push({
-                id: `doctor${index}`,
-                name: `Doctor ${index}`,
-                notAvailableWeekdays: [],
-                backToBackTolerance: 0.5
-            });
-            renderConfig();
-            setDirty(true);
-        });
-
-        el.configAside.addEventListener('input', () => setDirty(true));
-        el.configAside.addEventListener('change', () => setDirty(true));
-
-        el.configDoctors.addEventListener('click', (event) => {
-            if (event.target.classList.contains('remove-doctor')) {
-                event.target.closest('.doctor-config')?.remove();
-                setDirty(true);
-                return;
-            }
-            const header = event.target.closest('.doctor-header');
-            if (header) {
-                header.nextElementSibling.classList.toggle('hidden');
-            }
-        });
-
-        el.discardConfig.addEventListener('click', () => {
-            const openDetails = new Set(
-                [...document.querySelectorAll('aside details')].flatMap((d, i) => d.open ? [i] : [])
-            );
-            const openDoctors = new Set(
-                [...document.querySelectorAll('.doctor-config')].flatMap((card, i) =>
-                    !card.querySelector('.doctor-body').classList.contains('hidden') ? [i] : []
-                )
-            );
-
-            renderConfig();
-            showMessage({text: ''});
-
-            [...document.querySelectorAll('aside details')].forEach((d, i) => {
-                if (openDetails.has(i)) d.open = true;
-            });
-            document.querySelectorAll('.doctor-config').forEach((card, i) => {
-                if (openDoctors.has(i)) card.querySelector('.doctor-body').classList.remove('hidden');
-            });
-        });
-
-        el.saveConfig.addEventListener('click', async () => {
-            showMessage({text: ''});
-            el.saveConfig.disabled = true;
-            el.saveConfig.textContent = t.saving;
-
-            try {
-                configState = await request('/api/config', {
-                    method: 'PUT',
-                    body: JSON.stringify(collectConfig())
-                });
-                renderConfig();
-                showMessage({type: 'success', text: t.configSaved});
-            } catch (err) {
-                showMessage({type: 'error', text: err.message});
-            } finally {
-                el.saveConfig.disabled = false;
-                el.saveConfig.textContent = t.save;
-            }
-        });
-
         // ─── Price estimation ─────────────────────────────────────────────────────
         //
         // The price reflects three dimensions of computational cost:
@@ -1177,6 +1105,78 @@
             el.priceEstimate.classList.remove('hidden');
             el.priceValue.textContent = price === 0 ? t.freeLabel : currencyFmt.format(price);
         };
+
+        el.monthSelect.addEventListener('change', updatePrice);
+        el.yearSelect.addEventListener('change', updatePrice);
+
+        el.addDoctor.addEventListener('click', () => {
+            configState = collectConfig();
+            const index = configState.doctors.length + 1;
+            configState.doctors.push({
+                id: `doctor${index}`,
+                name: `Doctor ${index}`,
+                notAvailableWeekdays: [],
+                backToBackTolerance: 0.5
+            });
+            renderConfig();
+            setDirty(true);
+        });
+
+        el.configAside.addEventListener('input', () => setDirty(true));
+        el.configAside.addEventListener('change', () => setDirty(true));
+
+        el.configDoctors.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-doctor')) {
+                event.target.closest('.doctor-config')?.remove();
+                setDirty(true);
+                return;
+            }
+            const header = event.target.closest('.doctor-header');
+            if (header) {
+                header.nextElementSibling.classList.toggle('hidden');
+            }
+        });
+
+        el.discardConfig.addEventListener('click', () => {
+            const openDetails = new Set(
+                [...document.querySelectorAll('aside details')].flatMap((d, i) => d.open ? [i] : [])
+            );
+            const openDoctors = new Set(
+                [...document.querySelectorAll('.doctor-config')].flatMap((card, i) =>
+                    !card.querySelector('.doctor-body').classList.contains('hidden') ? [i] : []
+                )
+            );
+
+            renderConfig();
+            showMessage({text: ''});
+
+            [...document.querySelectorAll('aside details')].forEach((d, i) => {
+                if (openDetails.has(i)) d.open = true;
+            });
+            document.querySelectorAll('.doctor-config').forEach((card, i) => {
+                if (openDoctors.has(i)) card.querySelector('.doctor-body').classList.remove('hidden');
+            });
+        });
+
+        el.saveConfig.addEventListener('click', async () => {
+            showMessage({text: ''});
+            el.saveConfig.disabled = true;
+            el.saveConfig.textContent = t.saving;
+
+            try {
+                configState = await request('/api/config', {
+                    method: 'PUT',
+                    body: JSON.stringify(collectConfig())
+                });
+                renderConfig();
+                showMessage({type: 'success', text: t.configSaved});
+            } catch (err) {
+                showMessage({type: 'error', text: err.message});
+            } finally {
+                el.saveConfig.disabled = false;
+                el.saveConfig.textContent = t.save;
+            }
+        });
 
         const floatingTooltip = document.createElement('div');
         floatingTooltip.className = 'fixed z-50 max-w-xs rounded-md bg-slate-800 px-3 py-2 text-xs leading-relaxed text-white shadow-lg pointer-events-none';
