@@ -736,6 +736,7 @@
         const renderConfig = () => {
             if (!configState) return;
 
+            try {
             el.configDoctors.innerHTML = configState.doctors.map((doctor, index) => `
                 <div class="doctor-config rounded-md border border-line bg-white" data-index="${index}">
                     <div class="doctor-header flex cursor-pointer items-center justify-between gap-3 px-4 py-3">
@@ -810,11 +811,6 @@
                 `;
             }).join('');
 
-            el.pricingTierBadge.textContent = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier ?? '';
-            if (configState.version) el.appVersion.textContent = configState.version;
-            setDirty(false);
-            updatePrice();
-
             el.weightsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {}).map(([key, value]) => `
                 <label class="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-line bg-white px-3 py-2 text-sm">
                     <span>
@@ -824,6 +820,14 @@
                     <input class="weight-field h-10 rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" data-name="${key}" type="number" step="0.001" value="${value}">
                 </label>
             `).join('');
+
+            el.pricingTierBadge.textContent = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier ?? '';
+            if (configState.version) el.appVersion.textContent = configState.version;
+            setDirty(false);
+            updatePrice();
+        } catch (err) {
+            showMessage({type: 'error', text: `Render error: ${err.message}`});
+        }
         };
 
         const loadConfig = async () => {
