@@ -26,7 +26,11 @@
     <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
         <header class="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-pine">DoctorPlan</p>
+                <div class="flex items-center gap-2">
+                    <p class="text-sm font-semibold uppercase tracking-wide text-pine">DoctorPlan</p>
+                    <span id="pricing-tier-badge" class="hidden rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-500"></span>
+                    <span id="version-badge" class="hidden rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-teal-600"></span>
+                </div>
                 <h1 id="page-title" class="mt-1 text-3xl font-semibold tracking-normal text-ink sm:text-4xl">On-duty schedule</h1>
             </div>
 
@@ -129,11 +133,6 @@
                             Save
                         </button>
                     </div>
-                </div>
-
-                <div class="mt-4 flex items-center justify-between text-sm">
-                    <span id="label-pricing-tier" class="font-medium text-slate-700">Pricing tier</span>
-                    <span id="pricing-tier-badge" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"></span>
                 </div>
 
                 <details class="group mt-4">
@@ -261,8 +260,8 @@
             apiToggle: document.querySelector('#api-toggle'),
             apiPanel: document.querySelector('#api-panel'),
             appVersion: document.querySelector('#app-version'),
-            labelPricingTier: document.querySelector('#label-pricing-tier'),
             pricingTierBadge: document.querySelector('#pricing-tier-badge'),
+            versionBadge: document.querySelector('#version-badge'),
             priceEstimate: document.querySelector('#price-estimate'),
             labelEstimatedCost: document.querySelector('#label-estimated-cost'),
             priceValue: document.querySelector('#price-value')
@@ -302,8 +301,7 @@
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
                 labelApi: 'API endpoint',
                 apiToggle: 'API settings',
-                labelPricingTier: 'Pricing tier',
-                pricingTierLabels: {free: 'Free', low: 'Low', medium: 'Medium', high: 'High'},
+                pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Estimated cost:',
                 freeLabel: 'Free',
                 labelScore: 'Score',
@@ -401,8 +399,7 @@
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
                 labelApi: 'Endpoint API',
                 apiToggle: 'Ajustes de API',
-                labelPricingTier: 'Rango de precios',
-                pricingTierLabels: {free: 'Gratis', low: 'Bajo', medium: 'Medio', high: 'Alto'},
+                pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Coste estimado:',
                 freeLabel: 'Gratis',
                 labelScore: 'Puntuación',
@@ -489,7 +486,6 @@
         el.labelSchedule.textContent = t.labelSchedule;
         el.labelApi.textContent = t.labelApi;
         el.apiToggle.title = t.apiToggle;
-        el.labelPricingTier.textContent = t.labelPricingTier;
         el.labelEstimatedCost.textContent = t.estimatedCost;
         el.button.textContent = t.generate;
         el.stopButton.textContent = t.stop;
@@ -821,8 +817,14 @@
                 </label>
             `).join('');
 
-            el.pricingTierBadge.textContent = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier ?? '';
-            if (configState.version) el.appVersion.textContent = configState.version;
+            const tierLabel = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier;
+            el.pricingTierBadge.textContent = tierLabel ?? '';
+            el.pricingTierBadge.classList.toggle('hidden', !tierLabel);
+            if (configState.version) {
+                el.versionBadge.textContent = configState.version;
+                el.versionBadge.classList.remove('hidden');
+                el.appVersion.textContent = configState.version;
+            }
             setDirty(false);
             updatePrice();
         } catch (err) {
