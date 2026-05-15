@@ -17,15 +17,15 @@ export const offsetRatio = 0.75;
 // Higher values make a criterion more important; set a weight to 0 to disable it.
 export const evaluatorWeights = {
     avoidBackToBack: 1.339,
-    commonNotConsecutiveWeekdays: 32.137,
+    commonNotConsecutiveWeekdays: 33,
     freeWeekendsBalance: 0.08,
     isolatedWeekendDaysBalance: 0.054,
     maxPossibleFreeWeekends: 0.134,
     personalDesiredDutyDates: 0.134,
     personalDesiredFreeDates: 0.268,
     personalDutiesDistribution: 0.134,
-    personalNotAvailableDates: 32.137,
-    personalNotAvailableWeekdays: 32.137,
+    personalNotAvailableDates: 33,
+    personalNotAvailableWeekdays: 33,
     totalDutyDaysBalance: 1.339,
     weekendDaysBalance: 0.107
 };
