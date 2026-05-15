@@ -142,13 +142,22 @@
                             <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
                         </svg>
                     </summary>
-                    <button
-                        id="add-doctor"
-                        type="button"
-                        class="mt-3 w-full rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"
-                    >
-                        Add doctor
-                    </button>
+                    <div class="mt-3 flex gap-2">
+                        <button
+                            id="add-doctor"
+                            type="button"
+                            class="flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"
+                        >
+                            Add doctor
+                        </button>
+                        <button
+                            id="clear-doctors"
+                            type="button"
+                            class="rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-500/20"
+                        >
+                            Clear all
+                        </button>
+                    </div>
                     <div id="config-doctors" class="mt-3 grid gap-3 max-h-96 overflow-y-auto pr-1"></div>
                 </details>
 
@@ -240,6 +249,7 @@
             scheduleEmpty: document.querySelector('#schedule-empty'),
             scheduleGrid: document.querySelector('#schedule-grid'),
             addDoctor: document.querySelector('#add-doctor'),
+            clearDoctors: document.querySelector('#clear-doctors'),
             discardConfig: document.querySelector('#discard-config'),
             saveConfig: document.querySelector('#save-config'),
             configAside: document.querySelector('aside'),
@@ -287,6 +297,8 @@
                 saving: 'Saving...',
                 doctors: 'Doctors',
                 addDoctor: 'Add doctor',
+                clearDoctors: 'Clear all',
+                clearDoctorsConfirm: 'Remove all doctors?',
                 removeDoctor: 'Remove',
                 algorithmParameters: 'Algorithm Parameters',
                 constraintWeights: 'Constraint Weights',
@@ -385,6 +397,8 @@
                 saving: 'Guardando...',
                 doctors: 'Médicos',
                 addDoctor: 'Añadir médico',
+                clearDoctors: 'Limpiar todo',
+                clearDoctorsConfirm: '¿Eliminar todos los médicos?',
                 removeDoctor: 'Eliminar',
                 algorithmParameters: 'Parámetros del algoritmo',
                 constraintWeights: 'Pesos de restricciones',
@@ -492,6 +506,7 @@
         el.discardConfig.textContent = t.discard;
         el.saveConfig.textContent = t.save;
         el.addDoctor.textContent = t.addDoctor;
+        el.clearDoctors.textContent = t.clearDoctors;
         el.scheduleEmpty.textContent = t.noSchedule;
         el.scheduleCount.textContent = t.noDuties;
         el.progressTitle.textContent = t.phaseDefault;
@@ -1126,6 +1141,16 @@
 
         el.monthSelect.addEventListener('change', updatePrice);
         el.yearSelect.addEventListener('change', updatePrice);
+
+        el.clearDoctors.addEventListener('click', () => {
+            if (!confirm(t.clearDoctorsConfirm)) return;
+            configState = collectConfig();
+            configState.doctors = [];
+            configState.dates = {notAvailableDates: {}, desiredDutyDates: {}, desiredFreeDates: {}};
+            configState.offsets = {};
+            renderConfig();
+            setDirty(true);
+        });
 
         el.addDoctor.addEventListener('click', () => {
             configState = collectConfig();
