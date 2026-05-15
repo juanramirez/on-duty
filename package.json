@@ -1,6 +1,6 @@
 {
   "name": "on-duty",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "On duty schedule organizer for hospital services based on evolutionary algorithms",
   "type": "module",
   "main": "lib/index.js",
