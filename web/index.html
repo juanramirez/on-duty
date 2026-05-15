@@ -573,7 +573,7 @@
             'personalNotAvailableDates',
             'personalNotAvailableWeekdays'
         ]);
-        const HARD_CONSTRAINT_WEIGHT = 99 / HARD_CONSTRAINTS.size; // hard constraints together own 99% of the score
+        const HARD_TOTAL_WEIGHT = 99; // hard constraints always own 99% of the score, split equally among active ones
 
         const infoIcon = (description) => description ? `
             <span data-tooltip="${description.replaceAll('"', '&quot;')}" class="inline-flex shrink-0 cursor-help align-text-bottom">
@@ -959,8 +959,10 @@
             document.querySelectorAll('.weight-field').forEach(input => {
                 next.algorithm.evaluatorWeights[input.dataset.name] = Number(input.value);
             });
+            const activeHard = document.querySelectorAll('.hard-constraint-field:checked').length;
+            const hardWeight = activeHard > 0 ? HARD_TOTAL_WEIGHT / activeHard : 0;
             document.querySelectorAll('.hard-constraint-field').forEach(checkbox => {
-                next.algorithm.evaluatorWeights[checkbox.dataset.name] = checkbox.checked ? HARD_CONSTRAINT_WEIGHT : 0;
+                next.algorithm.evaluatorWeights[checkbox.dataset.name] = checkbox.checked ? hardWeight : 0;
             });
 
             return next;
