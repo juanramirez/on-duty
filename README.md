@@ -23,6 +23,44 @@ For example, to generate the schedule for March 2024:
 yarn start -- --month 2024-03
 ```
 
+## REST API
+
+Start the API server:
+
+```bash
+yarn api
+```
+
+By default it listens on `http://127.0.0.1:3000`. You can change that with `HOST` and `PORT`:
+
+```bash
+HOST=0.0.0.0 PORT=3001 yarn api
+```
+
+Available endpoints:
+
+- `GET /health` returns a basic health check.
+- `GET /api/doctors` returns the configured doctors.
+- `GET /api/schedules?month=YYYY-MM` generates a schedule for the requested month.
+- `POST /api/schedules` with JSON body `{ "month": "YYYY-MM" }` generates a schedule for the requested month.
+- `POST /api/schedule-jobs` with JSON body `{ "month": "YYYY-MM" }` starts an async generation job.
+- `GET /api/schedule-jobs/:id` returns progress and, when ready, the generated schedule.
+- `POST /api/schedule-jobs/:id/cancel` stops a running job and returns the best schedule found so far when one is available.
+- `GET /api/config` returns the editable configuration used to populate the frontend.
+- `PUT /api/config` saves doctors, date preferences, offsets and algorithm weights back to `config/*.js`.
+
+The schedule response includes a machine-readable `schedule` array and a plain-text `report`, so a webapp can render either format.
+
+## Webapp
+
+Start the API and open `http://127.0.0.1:3000` in a browser:
+
+```bash
+yarn api
+```
+
+You can also open `web/index.html` directly. The frontend uses Tailwind through the browser CDN and calls `http://127.0.0.1:3000` by default when opened as a local file.
+
 ## Running tests
 
 ```bash
