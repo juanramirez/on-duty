@@ -573,7 +573,7 @@
             'personalNotAvailableDates',
             'personalNotAvailableWeekdays'
         ]);
-        const HARD_CONSTRAINT_WEIGHT = 32.137;
+        const HARD_CONSTRAINT_WEIGHT = 99 / HARD_CONSTRAINTS.size; // hard constraints together own 99% of the score
 
         const infoIcon = (description) => description ? `
             <span data-tooltip="${description.replaceAll('"', '&quot;')}" class="inline-flex shrink-0 cursor-help align-text-bottom">
