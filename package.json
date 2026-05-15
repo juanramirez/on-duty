@@ -11,6 +11,7 @@
   "private": true,
   "scripts": {
     "start": "node .",
+    "api": "node lib/server.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint ."
   },
