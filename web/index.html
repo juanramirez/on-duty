@@ -35,15 +35,7 @@
             </div>
 
             <div class="flex flex-col gap-2 sm:items-end">
-                <form id="schedule-form" class="flex flex-wrap items-end gap-3">
-                    <div class="grid gap-1 text-sm font-medium text-slate-700">
-                        <span id="label-month">Month</span>
-                        <div class="flex gap-1.5">
-                            <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
-                            <select id="year-select" class="h-11 w-24 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
-                        </div>
-                    </div>
-
+                <form id="schedule-form" class="flex flex-wrap items-center gap-3">
                     <button
                         id="generate-button"
                         type="submit"
@@ -127,6 +119,14 @@
                         >
                             Save
                         </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid gap-1 text-sm font-medium text-slate-700">
+                    <span id="label-month">Month</span>
+                    <div class="flex gap-1.5">
+                        <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
+                        <select id="year-select" class="h-11 w-24 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
                     </div>
                 </div>
 
