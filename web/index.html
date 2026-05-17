@@ -172,12 +172,22 @@
 
                 <details class="group mt-6">
                     <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
-                        <span id="label-weights">Constraint Weights</span>
+                        <span id="label-hard-constraints">Constraints</span>
                         <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
                         </svg>
                     </summary>
-                    <div id="weights-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
+                    <div id="hard-constraints-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
+                </details>
+
+                <details class="group mt-6">
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                        <span id="label-soft-constraints">Preferences</span>
+                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                        </svg>
+                    </summary>
+                    <div id="soft-constraints-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
                 </details>
             </aside>
 
@@ -254,13 +264,15 @@
             configAside: document.querySelector('aside'),
             configDoctors: document.querySelector('#config-doctors'),
             algorithmFields: document.querySelector('#algorithm-fields'),
-            weightsList: document.querySelector('#weights-list'),
+            hardConstraintsList: document.querySelector('#hard-constraints-list'),
+            softConstraintsList: document.querySelector('#soft-constraints-list'),
             pageTitle: document.querySelector('#page-title'),
             labelMonth: document.querySelector('#label-month'),
             labelConfiguration: document.querySelector('#label-configuration'),
             labelDoctors: document.querySelector('#label-doctors'),
             labelAlgorithm: document.querySelector('#label-algorithm'),
-            labelWeights: document.querySelector('#label-weights'),
+            labelHardConstraints: document.querySelector('#label-hard-constraints'),
+            labelSoftConstraints: document.querySelector('#label-soft-constraints'),
             labelScore: document.querySelector('#label-score'),
             labelMean: document.querySelector('#label-mean'),
             labelGeneration: document.querySelector('#label-generation'),
@@ -300,7 +312,8 @@
                 clearDoctorsConfirm: 'Remove all doctors?',
                 removeDoctor: 'Remove',
                 algorithmParameters: 'Algorithm Parameters',
-                constraintWeights: 'Constraint Weights',
+                constraintsSection: 'Constraints',
+                preferencesSection: 'Preferences',
                 fieldId: 'ID',
                 fieldName: 'Name',
                 fieldBackToBack: 'Back-to-back tolerance',
@@ -342,18 +355,56 @@
                 stoppedWithResult: (month) => `Stopped. Showing the best schedule found for ${month}.`,
                 generated: (month) => `Schedule generated for ${month}.`,
                 constraints: {
-                    commonNotConsecutiveWeekdays: 'Common consecutive weekdays',
-                    personalNotAvailableWeekdays: 'Doctor unavailable weekdays',
-                    personalNotAvailableDates: 'Doctor unavailable dates',
-                    avoidBackToBack: 'Avoid back-to-back duties',
-                    totalDutyDaysBalance: 'Total duty balance',
-                    personalDesiredFreeDates: 'Desired free dates',
-                    personalDesiredDutyDates: 'Desired duty dates',
-                    personalDutiesDistribution: 'Duty distribution',
-                    maxPossibleFreeWeekends: 'Max free weekends',
-                    weekendDaysBalance: 'Weekend balance',
-                    freeWeekendsBalance: 'Free weekends balance',
-                    isolatedWeekendDaysBalance: 'Isolated weekend balance'
+                    commonNotConsecutiveWeekdays: {
+                        name: 'Common consecutive weekdays',
+                        description: 'Penalises consecutive weekday duties shared across all doctors.'
+                    },
+                    personalNotAvailableWeekdays: {
+                        name: 'Doctor unavailable weekdays',
+                        description: 'Penalises assigning a doctor on their unavailable weekdays.'
+                    },
+                    personalNotAvailableDates: {
+                        name: 'Doctor unavailable dates',
+                        description: 'Penalises assigning a doctor on dates they marked unavailable.'
+                    },
+                },
+                preferences: {
+                    avoidBackToBack: {
+                        name: 'Avoid back-to-back duties',
+                        description: 'Penalises consecutive duties for the same doctor.'
+                    },
+                    totalDutyDaysBalance: {
+                        name: 'Total duty balance',
+                        description: 'Rewards equal total duty count across all doctors.'
+                    },
+                    personalDesiredFreeDates: {
+                        name: 'Desired free dates',
+                        description: 'Penalises duties on a doctor\'s preferred free dates.'
+                    },
+                    personalDesiredDutyDates: {
+                        name: 'Desired duty dates',
+                        description: 'Rewards duties on a doctor\'s preferred duty dates.'
+                    },
+                    personalDutiesDistribution: {
+                        name: 'Duty distribution',
+                        description: 'Rewards evenly spread duties throughout the month per doctor.'
+                    },
+                    maxPossibleFreeWeekends: {
+                        name: 'Max free weekends',
+                        description: 'Rewards maximising free weekends for all doctors.'
+                    },
+                    weekendDaysBalance: {
+                        name: 'Weekend balance',
+                        description: 'Rewards equal distribution of weekend duties among doctors.'
+                    },
+                    freeWeekendsBalance: {
+                        name: 'Free weekends balance',
+                        description: 'Rewards equal number of free weekends among doctors.'
+                    },
+                    isolatedWeekendDaysBalance: {
+                        name: 'Isolated weekend balance',
+                        description: 'Rewards equal distribution of isolated weekend day duties.'
+                    }
                 },
                 paramDescriptions: {
                     populationSize: 'Number of candidate schedules in each generation.',
@@ -368,20 +419,6 @@
                     'islandOptions.migration': 'Individuals exchanged between islands each epoch.',
                     'islandOptions.epoch': 'Generations between island migrations.'
                 },
-                constraintDescriptions: {
-                    commonNotConsecutiveWeekdays: 'Penalises consecutive weekday duties shared across all doctors.',
-                    personalNotAvailableWeekdays: 'Penalises assigning a doctor on their unavailable weekdays.',
-                    personalNotAvailableDates: 'Penalises assigning a doctor on dates they marked unavailable.',
-                    avoidBackToBack: 'Penalises consecutive duties for the same doctor.',
-                    totalDutyDaysBalance: 'Rewards equal total duty count across all doctors.',
-                    personalDesiredFreeDates: 'Penalises duties on a doctor\'s preferred free dates.',
-                    personalDesiredDutyDates: 'Rewards duties on a doctor\'s preferred duty dates.',
-                    personalDutiesDistribution: 'Rewards evenly spread duties throughout the month per doctor.',
-                    maxPossibleFreeWeekends: 'Rewards maximising free weekends for all doctors.',
-                    weekendDaysBalance: 'Rewards equal distribution of weekend duties among doctors.',
-                    freeWeekendsBalance: 'Rewards equal number of free weekends among doctors.',
-                    isolatedWeekendDaysBalance: 'Rewards equal distribution of isolated weekend day duties.'
-                }
             },
             es: {
                 pageTitle: 'Calendario de guardias',
@@ -400,7 +437,8 @@
                 clearDoctorsConfirm: '¿Eliminar todos los médicos?',
                 removeDoctor: 'Eliminar',
                 algorithmParameters: 'Parámetros del algoritmo',
-                constraintWeights: 'Pesos de restricciones',
+                constraintsSection: 'Restricciones',
+                preferencesSection: 'Preferencias',
                 fieldId: 'ID',
                 fieldName: 'Nombre',
                 fieldBackToBack: 'Tolerancia guardias consecutivas',
@@ -442,18 +480,56 @@
                 stoppedWithResult: (month) => `Detenido. Mostrando el mejor calendario encontrado para ${month}.`,
                 generated: (month) => `Calendario generado para ${month}.`,
                 constraints: {
-                    commonNotConsecutiveWeekdays: 'Días laborables consecutivos comunes',
-                    personalNotAvailableWeekdays: 'Días no disponibles del médico',
-                    personalNotAvailableDates: 'Fechas no disponibles del médico',
-                    avoidBackToBack: 'Evitar guardias consecutivas',
-                    totalDutyDaysBalance: 'Balance total de guardias',
-                    personalDesiredFreeDates: 'Fechas libres deseadas',
-                    personalDesiredDutyDates: 'Fechas de guardia deseadas',
-                    personalDutiesDistribution: 'Distribución de guardias',
-                    maxPossibleFreeWeekends: 'Máx. fines de semana libres',
-                    weekendDaysBalance: 'Balance de fines de semana',
-                    freeWeekendsBalance: 'Balance de fines de semana libres',
-                    isolatedWeekendDaysBalance: 'Balance de fines de semana aislados'
+                    commonNotConsecutiveWeekdays: {
+                        name: 'Días laborables consecutivos comunes',
+                        description: 'Penaliza días laborables consecutivos asignados a todos los médicos.'
+                    },
+                    personalNotAvailableWeekdays: {
+                        name: 'Días no disponibles del médico',
+                        description: 'Penaliza guardia en días no disponibles del médico.'
+                    },
+                    personalNotAvailableDates: {
+                        name: 'Fechas no disponibles del médico',
+                        description: 'Penaliza guardia en fechas marcadas como no disponibles.'
+                    },
+                },
+                preferences: {
+                    avoidBackToBack: {
+                        name: 'Evitar guardias consecutivas',
+                        description: 'Penaliza guardias consecutivas para el mismo médico.'
+                    },
+                    totalDutyDaysBalance: {
+                        name: 'Balance total de guardias',
+                        description: 'Premia igualar el número total de guardias entre médicos.'
+                    },
+                    personalDesiredFreeDates: {
+                        name: 'Fechas libres deseadas',
+                        description: 'Penaliza guardia en fechas libres deseadas por el médico.'
+                    },
+                    personalDesiredDutyDates: {
+                        name: 'Fechas de guardia deseadas',
+                        description: 'Premia guardia en fechas de guardia deseadas por el médico.'
+                    },
+                    personalDutiesDistribution: {
+                        name: 'Distribución de guardias',
+                        description: 'Premia distribuir guardias uniformemente a lo largo del mes.'
+                    },
+                    maxPossibleFreeWeekends: {
+                        name: 'Máx. fines de semana libres',
+                        description: 'Premia maximizar los fines de semana libres de todos los médicos.'
+                    },
+                    weekendDaysBalance: {
+                        name: 'Balance de fines de semana',
+                        description: 'Premia igualar las guardias de fin de semana entre médicos.'
+                    },
+                    freeWeekendsBalance: {
+                        name: 'Balance de fines de semana libres',
+                        description: 'Premia igualar el número de fines de semana libres entre médicos.'
+                    },
+                    isolatedWeekendDaysBalance: {
+                        name: 'Balance de fines de semana aislados',
+                        description: 'Premia igualar las guardias de días de fin de semana aislados.'
+                    }
                 },
                 paramDescriptions: {
                     populationSize: 'Número de calendarios candidatos en cada generación.',
@@ -468,20 +544,6 @@
                     'islandOptions.migration': 'Individuos intercambiados entre islas cada época.',
                     'islandOptions.epoch': 'Generaciones entre migraciones de islas.'
                 },
-                constraintDescriptions: {
-                    commonNotConsecutiveWeekdays: 'Penaliza días de la semana consecutivos asignados a todos los médicos.',
-                    personalNotAvailableWeekdays: 'Penaliza guardia en días no disponibles del médico.',
-                    personalNotAvailableDates: 'Penaliza guardia en fechas marcadas como no disponibles.',
-                    avoidBackToBack: 'Penaliza guardias consecutivas para el mismo médico.',
-                    totalDutyDaysBalance: 'Premia igualar el número total de guardias entre médicos.',
-                    personalDesiredFreeDates: 'Penaliza guardia en fechas libres deseadas por el médico.',
-                    personalDesiredDutyDates: 'Premia guardia en fechas de guardia deseadas por el médico.',
-                    personalDutiesDistribution: 'Premia distribuir guardias uniformemente a lo largo del mes.',
-                    maxPossibleFreeWeekends: 'Premia maximizar los fines de semana libres de todos los médicos.',
-                    weekendDaysBalance: 'Premia igualar las guardias de fin de semana entre médicos.',
-                    freeWeekendsBalance: 'Premia igualar el número de fines de semana libres entre médicos.',
-                    isolatedWeekendDaysBalance: 'Premia igualar las guardias de días de fin de semana aislados.'
-                }
             }
         };
         const t = ui[locale.startsWith('es') ? 'es' : 'en'];
@@ -492,7 +554,8 @@
         el.labelConfiguration.textContent = t.configuration;
         el.labelDoctors.textContent = t.doctors;
         el.labelAlgorithm.textContent = t.algorithmParameters;
-        el.labelWeights.textContent = t.constraintWeights;
+        el.labelHardConstraints.textContent = t.constraintsSection;
+        el.labelSoftConstraints.textContent = t.preferencesSection;
         el.labelScore.textContent = t.labelScore;
         el.labelMean.textContent = t.labelMean;
         el.labelGeneration.textContent = t.labelGeneration;
@@ -829,22 +892,27 @@
                 `;
             }).join('');
 
-            el.weightsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {}).map(([key, value]) => {
-                const label = `<span class="flex items-center gap-1 font-medium text-ink">${t.constraints[key] || key}${infoIcon(t.constraintDescriptions?.[key])}</span>
-                        <span class="mt-0.5 block text-xs text-slate-500">${key}</span>`;
-                if (HARD_CONSTRAINTS.has(key)) {
-                    return `
-                        <label class="grid grid-cols-[1fr_auto] items-center gap-4 rounded-md border border-line bg-white px-3 py-2.5 text-sm">
-                            <span>${label}</span>
-                            <input type="checkbox" class="hard-constraint-field h-4 w-4" data-name="${key}" ${value > 0 ? 'checked' : ''}>
-                        </label>`;
-                }
-                return `
+            const constraintLabel = (key) => {
+                const entry = (HARD_CONSTRAINTS.has(key) ? t.constraints : t.preferences)?.[key] || {};
+                return `<span class="flex items-center gap-1 font-medium text-ink">${entry.name || key}${infoIcon(key)}</span>
+                        <span class="mt-0.5 block text-xs text-slate-500">${entry.description || ''}</span>`;
+            };
+
+            el.hardConstraintsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {})
+                .filter(([key]) => HARD_CONSTRAINTS.has(key))
+                .map(([key, value]) => `
+                    <label class="grid grid-cols-[1fr_auto] items-center gap-4 rounded-md border border-line bg-white px-3 py-2.5 text-sm">
+                        <span>${constraintLabel(key)}</span>
+                        <input type="checkbox" class="hard-constraint-field h-4 w-4" data-name="${key}" ${value > 0 ? 'checked' : ''}>
+                    </label>`).join('');
+
+            el.softConstraintsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {})
+                .filter(([key]) => !HARD_CONSTRAINTS.has(key))
+                .map(([key, value]) => `
                     <label class="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-line bg-white px-3 py-2 text-sm">
-                        <span>${label}</span>
+                        <span>${constraintLabel(key)}</span>
                         <input class="weight-field h-10 rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" data-name="${key}" type="number" step="0.001" value="${value}">
-                    </label>`;
-            }).join('');
+                    </label>`).join('');
 
             const tierLabel = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier;
             el.pricingTierBadge.textContent = tierLabel ?? '';
