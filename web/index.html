@@ -320,7 +320,7 @@
                 fieldUnavailableWeekdays: 'Unavailable weekdays',
                 fieldUnavailableDates: 'Unavailable dates',
                 fieldDesiredDutyDates: 'Desired duty dates',
-                fieldDesiredFreeDates: 'Desired free dates / offset',
+                fieldDesiredFreeDates: 'Desired free dates',
                 fieldDutyOffset: 'Duty offset',
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
                 labelApi: 'API endpoint',
@@ -445,7 +445,7 @@
                 fieldUnavailableWeekdays: 'Días no disponibles',
                 fieldUnavailableDates: 'Fechas no disponibles',
                 fieldDesiredDutyDates: 'Fechas de guardia deseadas',
-                fieldDesiredFreeDates: 'Fechas libres deseadas / compensación',
+                fieldDesiredFreeDates: 'Fechas libres deseadas',
                 fieldDutyOffset: 'Compensación',
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
                 labelApi: 'Endpoint API',
@@ -657,6 +657,32 @@
         const parseDatesText = (value) =>
             value.split(/[\n,]+/).map(item => item.trim()).filter(Boolean);
 
+        const fromInputDate = (yyyymmdd) => {
+            if (!yyyymmdd) return '';
+            const [y, m, d] = yyyymmdd.split('-');
+            return `${d}/${m}/${y}`;
+        };
+
+        const dateChipHtml = (d) =>
+            `<span class="inline-flex items-center gap-0.5 rounded-full bg-slate-100 pl-2.5 pr-1 py-0.5 text-xs font-medium text-slate-700">
+                ${escapeHtml(d)}
+                <button type="button" class="remove-date ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-slate-400 hover:bg-red-100 hover:text-red-600" data-date="${escapeHtml(d)}">×</button>
+            </span>`;
+
+        const datePicker = (cls, dates, label, min, max) =>
+            `<div class="grid gap-1 text-sm font-medium text-slate-700">
+                <span>${label}</span>
+                <div class="${cls} date-picker" data-dates="${escapeHtml(JSON.stringify(dates))}">
+                    <div class="date-chips flex flex-wrap gap-1.5${dates.length ? ' mb-1.5' : ''}">
+                        ${dates.map(dateChipHtml).join('')}
+                    </div>
+                    <div class="flex gap-1.5">
+                        <input type="date" class="date-input h-9 flex-1 min-w-0 rounded-md border border-line px-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" min="${min}" max="${max}">
+                        <button type="button" class="add-date flex h-9 w-9 items-center justify-center rounded-md bg-pine text-white text-xl font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30">+</button>
+                    </div>
+                </div>
+            </div>`;
+
         const setBusy = (busy) => {
             el.button.disabled = busy;
             el.button.textContent = busy ? t.generating : t.generate;
@@ -817,6 +843,11 @@
         const renderConfig = () => {
             if (!configState) return;
 
+            const pickerYear = el.yearSelect.value;
+            const pickerMonth = el.monthSelect.value;
+            const pickerMin = `${pickerYear}-${pickerMonth}-01`;
+            const pickerMax = `${pickerYear}-${pickerMonth}-${String(new Date(Number(pickerYear), Number(pickerMonth), 0).getDate()).padStart(2, '0')}`;
+
             try {
             el.configDoctors.innerHTML = configState.doctors.map((doctor, index) => `
                 <div class="doctor-config rounded-md border border-line bg-white" data-index="${index}">
@@ -860,20 +891,12 @@
                                 </div>
                             </fieldset>
 
-                            <label class="grid gap-1 text-sm font-medium text-slate-700">
-                                ${t.fieldUnavailableDates}
-                                <textarea class="doctor-not-available h-28 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.notAvailableDates, doctor.id))}</textarea>
-                            </label>
+                            ${datePicker('doctor-not-available', configState.dates.notAvailableDates?.[doctor.id] || [], t.fieldUnavailableDates, pickerMin, pickerMax)}
+                            ${datePicker('doctor-desired-duty', configState.dates.desiredDutyDates?.[doctor.id] || [], t.fieldDesiredDutyDates, pickerMin, pickerMax)}
+                            ${datePicker('doctor-desired-free', configState.dates.desiredFreeDates?.[doctor.id] || [], t.fieldDesiredFreeDates, pickerMin, pickerMax)}
 
                             <label class="grid gap-1 text-sm font-medium text-slate-700">
-                                ${t.fieldDesiredDutyDates}
-                                <textarea class="doctor-desired-duty h-28 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.desiredDutyDates, doctor.id))}</textarea>
-                            </label>
-
-                            <label class="grid gap-1 text-sm font-medium text-slate-700">
-                                ${t.fieldDesiredFreeDates}
-                                <textarea class="doctor-desired-free h-20 min-w-0 w-full rounded-md border border-line px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-pine/20" placeholder="DD/MM/YYYY">${escapeHtml(datesText(configState.dates.desiredFreeDates, doctor.id))}</textarea>
-                                <span class="flex items-center gap-1 text-xs text-slate-500">${t.fieldDutyOffset}${infoIcon(t.fieldDutyOffsetDesc)}</span>
+                                <span class="flex items-center gap-1">${t.fieldDutyOffset}${infoIcon(t.fieldDutyOffsetDesc)}</span>
                                 <input class="doctor-offset h-10 min-w-0 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" type="number" step="0.1" placeholder="${t.fieldDutyOffset}" value="${configState.offsets?.[doctor.id] ?? ''}">
                             </label>
                         </div>
@@ -1003,9 +1026,9 @@
                 if (!doctor.id || !doctor.name) return;
                 next.doctors.push(doctor);
 
-                const notAvailable = parseDatesText(row.querySelector('.doctor-not-available').value);
-                const desiredDuty = parseDatesText(row.querySelector('.doctor-desired-duty').value);
-                const desiredFree = parseDatesText(row.querySelector('.doctor-desired-free').value);
+                const notAvailable = JSON.parse(row.querySelector('.doctor-not-available')?.dataset.dates || '[]');
+                const desiredDuty = JSON.parse(row.querySelector('.doctor-desired-duty')?.dataset.dates || '[]');
+                const desiredFree = JSON.parse(row.querySelector('.doctor-desired-free')?.dataset.dates || '[]');
                 const offset = row.querySelector('.doctor-offset').value;
 
                 if (notAvailable.length) next.dates.notAvailableDates[doctor.id] = notAvailable;
@@ -1243,6 +1266,34 @@
                 setDirty(true);
                 return;
             }
+
+            const addBtn = event.target.closest('.add-date');
+            if (addBtn) {
+                const picker = addBtn.closest('.date-picker');
+                const input = picker.querySelector('.date-input');
+                const ddmmyyyy = fromInputDate(input.value);
+                if (!ddmmyyyy) return;
+                const dates = JSON.parse(picker.dataset.dates || '[]');
+                if (dates.includes(ddmmyyyy)) return;
+                dates.push(ddmmyyyy);
+                dates.sort((a, b) => a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')));
+                picker.dataset.dates = JSON.stringify(dates);
+                picker.querySelector('.date-chips').innerHTML = dates.map(dateChipHtml).join('');
+                input.value = '';
+                setDirty(true);
+                return;
+            }
+
+            const removeBtn = event.target.closest('.remove-date');
+            if (removeBtn) {
+                const picker = removeBtn.closest('.date-picker');
+                const dates = JSON.parse(picker.dataset.dates || '[]').filter(d => d !== removeBtn.dataset.date);
+                picker.dataset.dates = JSON.stringify(dates);
+                picker.querySelector('.date-chips').innerHTML = dates.map(dateChipHtml).join('');
+                setDirty(true);
+                return;
+            }
+
             const header = event.target.closest('.doctor-header');
             if (header) {
                 header.nextElementSibling.classList.toggle('hidden');
