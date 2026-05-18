@@ -24,7 +24,7 @@
 </head>
 <body class="min-h-screen bg-mist text-ink antialiased">
     <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <header class="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
+        <header class="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-start md:justify-between">
             <div>
                 <div class="flex items-center gap-2">
                     <p class="text-sm font-semibold uppercase tracking-wide text-pine">DoctorPlan</p>
@@ -32,6 +32,7 @@
                     <span id="version-badge" class="hidden rounded-full bg-teal-600 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white"></span>
                 </div>
                 <h1 id="page-title" class="mt-1 text-3xl font-semibold tracking-normal text-ink sm:text-4xl">On-duty schedule</h1>
+                <p id="page-subtitle" class="mt-1.5 text-sm text-slate-500"></p>
             </div>
 
             <div class="flex flex-col gap-2 sm:items-end">
@@ -272,6 +273,7 @@
             hardConstraintsList: document.querySelector('#hard-constraints-list'),
             softConstraintsList: document.querySelector('#soft-constraints-list'),
             pageTitle: document.querySelector('#page-title'),
+            pageSubtitle: document.querySelector('#page-subtitle'),
             labelMonth: document.querySelector('#label-month'),
             labelConfiguration: document.querySelector('#label-configuration'),
             labelDoctors: document.querySelector('#label-doctors'),
@@ -303,6 +305,7 @@
         const ui = {
             en: {
                 pageTitle: 'On-duty schedule',
+                pageSubtitleHtml: 'Automatically generates on-call rosters that satisfy hard constraints and balance soft preferences, using a <a href="https://en.wikipedia.org/wiki/Genetic_algorithm" target="_blank" rel="noopener" class="text-pine underline underline-offset-2 hover:text-teal-800">genetic algorithm</a>.',
                 labelMonth: 'Month',
                 generate: 'Generate',
                 generating: 'Generating...',
@@ -429,6 +432,7 @@
             },
             es: {
                 pageTitle: 'Calendario de guardias',
+                pageSubtitleHtml: 'Genera automáticamente calendarios de guardia que cumplen las restricciones obligatorias y equilibran las preferencias configuradas, mediante un <a href="https://es.wikipedia.org/wiki/Algoritmo_gen%C3%A9tico" target="_blank" rel="noopener" class="text-pine underline underline-offset-2 hover:text-teal-800">algoritmo genético</a>.',
                 labelMonth: 'Mes',
                 generate: 'Generar',
                 generating: 'Generando...',
@@ -558,6 +562,7 @@
 
         document.documentElement.lang = locale;
         el.pageTitle.textContent = t.pageTitle;
+        el.pageSubtitle.innerHTML = t.pageSubtitleHtml;
         el.labelMonth.textContent = t.labelMonth;
         el.labelConfiguration.textContent = t.configuration;
         el.labelDoctors.textContent = t.doctors;
