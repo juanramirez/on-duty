@@ -97,23 +97,6 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Generate + Stop -->
-                <form id="schedule-form" class="flex items-center gap-3">
-                    <button
-                        id="generate-button"
-                        type="submit"
-                        class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                        Generate
-                    </button>
-                    <button
-                        id="stop-button"
-                        type="button"
-                        class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
-                    >
-                        Stop
-                    </button>
-                </form>
             </div>
         </header>
 
@@ -230,6 +213,22 @@
                     <p id="label-preferences-desc" class="mt-2 text-xs text-slate-500"></p>
                     <div id="soft-constraints-list" class="mt-3 grid gap-2 pr-1"></div>
                 </details>
+                <form id="schedule-form" class="mt-6 flex items-center gap-3">
+                    <button
+                        id="generate-button"
+                        type="submit"
+                        class="flex-1 h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    >
+                        Generate
+                    </button>
+                    <button
+                        id="stop-button"
+                        type="button"
+                        class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                    >
+                        Stop
+                    </button>
+                </form>
             </aside>
 
             <section class="min-w-0">
