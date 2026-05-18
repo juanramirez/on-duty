@@ -967,8 +967,104 @@
         }
         };
 
+        const generateDemoConfig = () => {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            const pickN = (arr, n) => [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+            const coin = (p = 0.5) => Math.random() < p;
+
+            const firstNames = [
+                'Elena', 'Miguel', 'Laura', 'Alba', 'Sergio', 'Paula',
+                'Iker', 'Núria', 'Brais', 'José Antonio', 'María del Carmen', 'Francisco Javier'
+            ];
+            const lastNames1 = [
+                'Casado', 'Rueda', 'Bermejo', 'Gutiérrez', 'Navarro', 'Olmedo',
+                'Etxebarria', 'Puigdomènech', 'Carballido', 'Montero', 'Alcántara', 'Gimeno'
+            ];
+            const lastNames2 = [
+                'Herrero', 'Prieto', 'Santos', 'de la Torre', 'Escribano', 'Castaño',
+                'Mendizabal', 'Soler', 'Mourelle', 'Vega', 'Fuentes', 'Roig'
+            ];
+
+            const toId = (name) => name.toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-z]/g, '').slice(0, 12);
+
+            const allWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const year = Number(el.yearSelect.value);
+            const month = Number(el.monthSelect.value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const pad = (n) => String(n).padStart(2, '0');
+            const randDate = () => `${pad(Math.floor(Math.random() * daysInMonth) + 1)}/${pad(month)}/${year}`;
+            const randDates = (n) => [...new Set(Array.from({length: n * 2}, randDate))].slice(0, n);
+
+            const usedFirstNames = new Set();
+            const doctorCount = 3 + Math.floor(Math.random() * 3); // 3–5
+            const doctors = [];
+            const notAvailableDates = {};
+            const desiredDutyDates = {};
+            const desiredFreeDates = {};
+            const offsets = {};
+
+            for (let i = 0; i < doctorCount; i++) {
+                const candidates = firstNames.filter(n => !usedFirstNames.has(n));
+                const first = pick(candidates);
+                usedFirstNames.add(first);
+                const name = `${first} ${pick(lastNames1)} ${pick(lastNames2)}`;
+                const id = toId(first) + (i + 1);
+
+                const doctor = {id, name, notAvailableWeekdays: []};
+                if (coin(0.5)) doctor.notAvailableWeekdays = pickN(allWeekdays, 1 + Math.floor(Math.random() * 2));
+                if (coin(0.4)) doctor.backToBackTolerance = Math.round(Math.random() * 10) / 10;
+
+                doctors.push(doctor);
+
+                if (coin(0.6)) notAvailableDates[id] = randDates(1 + Math.floor(Math.random() * 3));
+                if (coin(0.4)) desiredDutyDates[id] = randDates(1 + Math.floor(Math.random() * 2));
+                if (coin(0.4)) desiredFreeDates[id] = randDates(1 + Math.floor(Math.random() * 2));
+                if (coin(0.3)) offsets[id] = Math.floor(Math.random() * 5) - 2;
+            }
+
+            const randPref = () => Math.floor(Math.random() * 30) + 1;
+            const rawPrefs = {
+                avoidBackToBack: randPref(), totalDutyDaysBalance: randPref(),
+                personalDesiredFreeDates: randPref(), personalDesiredDutyDates: randPref(),
+                personalDutiesDistribution: randPref(), maxPossibleFreeWeekends: randPref(),
+                weekendDaysBalance: randPref(), freeWeekendsBalance: randPref(),
+                isolatedWeekendDaysBalance: randPref()
+            };
+            const prefTotal = Object.values(rawPrefs).reduce((s, v) => s + v, 0);
+            const evaluatorWeights = {};
+            ['commonNotConsecutiveWeekdays', 'personalNotAvailableDates', 'personalNotAvailableWeekdays']
+                .forEach(k => { evaluatorWeights[k] = 33; });
+            Object.entries(rawPrefs).forEach(([k, v]) => { evaluatorWeights[k] = v / prefTotal; });
+
+            return {
+                pricingTier: 'free',
+                version: '0.1.0',
+                doctors,
+                dates: {notAvailableDates, desiredDutyDates, desiredFreeDates},
+                offsets,
+                algorithm: {
+                    elitism: Math.round((0.005 + Math.random() * 0.02) * 1000) / 1000,
+                    generationLimit: pick([100, 200, 500, 1000]),
+                    mutationProbability: Math.round((0.3 + Math.random() * 0.4) * 100) / 100,
+                    mutationAggresivity: Math.round((0.3 + Math.random() * 0.5) * 100) / 100,
+                    populationSize: pick([200, 500, 1000, 2000]),
+                    stopScore: pick([90, 95, 98, 100]),
+                    tournamentSelectionRatio: Math.round((0.55 + Math.random() * 0.2) * 100) / 100,
+                    islandOptions: {
+                        islands: pick([2, 3, 4]),
+                        migration: Math.round((0.05 + Math.random() * 0.15) * 100) / 100,
+                        epoch: pick([10, 20, 30])
+                    },
+                    offsetRatio: Math.round((0.5 + Math.random() * 0.5) * 100) / 100,
+                    evaluatorWeights
+                }
+            };
+        };
+
         const loadConfig = async () => {
-            configState = await request('/api/config');
+            configState = generateDemoConfig();
             renderConfig();
         };
 
