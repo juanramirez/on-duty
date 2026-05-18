@@ -63,22 +63,29 @@
                                 <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 0 1-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 0 1 .947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 0 1 2.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 0 1 2.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 0 1 .947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 0 1-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 0 1-2.287-.947ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
                             </svg>
                         </button>
-                        <div id="api-panel" class="hidden absolute right-0 top-full z-20 mt-1 w-72 rounded-md border border-line bg-white p-3 shadow-lg">
-                            <div class="flex gap-3">
+                        <div id="api-panel" class="hidden absolute right-0 top-full z-20 mt-1 w-80 rounded-md border border-line bg-white p-3 shadow-lg">
+                            <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                <span id="label-api">API</span>
+                                <input
+                                    id="api-input"
+                                    type="url"
+                                    class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
+                                    value="http://127.0.0.1:3000"
+                                >
+                            </label>
+                            <div class="mt-3 flex gap-3">
                                 <label class="grid flex-1 gap-1 text-sm font-medium text-slate-700">
-                                    <span id="label-api">API</span>
-                                    <input
-                                        id="api-input"
-                                        type="url"
-                                        class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
-                                        value="http://127.0.0.1:3000"
-                                    >
-                                </label>
-                                <label class="grid gap-1 text-sm font-medium text-slate-700">
                                     <span id="label-language">Language</span>
                                     <select id="lang-select" class="h-10 rounded-md border border-line bg-white px-2 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4">
                                         <option value="en">English</option>
                                         <option value="es">Español</option>
+                                    </select>
+                                </label>
+                                <label class="grid flex-1 gap-1 text-sm font-medium text-slate-700">
+                                    <span id="label-week-start">Week starts on</span>
+                                    <select id="week-start-select" class="h-10 rounded-md border border-line bg-white px-2 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4">
+                                        <option value="mon">Monday</option>
+                                        <option value="sun">Sunday</option>
                                     </select>
                                 </label>
                             </div>
@@ -254,7 +261,7 @@
                     <div id="schedule-empty" class="px-4 py-14 text-center text-sm text-slate-500">
                         No schedule loaded.
                     </div>
-                    <div id="schedule-grid" class="hidden grid grid-cols-1 divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3"></div>
+                    <div id="schedule-grid" class="hidden"></div>
                 </div>
 
                 <details id="history-panel" class="hidden group mt-5 border-t border-line pt-5">
@@ -327,6 +334,8 @@
             labelApi: document.querySelector('#label-api'),
             labelLanguage: document.querySelector('#label-language'),
             langSelect: document.querySelector('#lang-select'),
+            weekStartSelect: document.querySelector('#week-start-select'),
+            labelWeekStart: document.querySelector('#label-week-start'),
             apiToggle: document.querySelector('#api-toggle'),
             apiPanel: document.querySelector('#api-panel'),
             appVersion: document.querySelector('#app-version'),
@@ -383,7 +392,8 @@
             if (!currentUser) return;
             await userRef().collection('settings').doc('prefs').set({
                 lang: localStorage.getItem('lang') || navigator.language,
-                apiEndpoint: el.api.value
+                apiEndpoint: el.api.value,
+                weekStart: localStorage.getItem('weekStart') || ''
             }, { merge: true });
         };
 
@@ -395,6 +405,9 @@
             if (s.apiEndpoint) el.api.value = s.apiEndpoint;
             const savedLang = s.lang?.startsWith('es') ? 'es' : s.lang ? 'en' : null;
             const currentLang = (localStorage.getItem('lang') || navigator.language).startsWith('es') ? 'es' : 'en';
+            if (s.weekStart === 'mon' || s.weekStart === 'sun') {
+                localStorage.setItem('weekStart', s.weekStart);
+            }
             if (savedLang && savedLang !== currentLang) {
                 localStorage.setItem('lang', savedLang);
                 location.reload();
@@ -475,6 +488,9 @@
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
                 labelApi: 'API endpoint',
                 labelLanguage: 'Language',
+                labelWeekStart: 'Week starts on',
+                weekStartMon: 'Monday',
+                weekStartSun: 'Sunday',
                 apiToggle: 'API settings',
                 pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Estimated cost:',
@@ -608,6 +624,9 @@
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
                 labelApi: 'Endpoint API',
                 labelLanguage: 'Idioma',
+                labelWeekStart: 'Semana empieza el',
+                weekStartMon: 'Lunes',
+                weekStartSun: 'Domingo',
                 apiToggle: 'Ajustes de API',
                 pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Coste estimado:',
@@ -735,6 +754,15 @@
         el.apiToggle.title = t.apiToggle;
         el.langSelect.addEventListener('change', () => {
             localStorage.setItem('lang', el.langSelect.value);
+            location.reload();
+        });
+        el.labelWeekStart.textContent = t.labelWeekStart;
+        el.weekStartSelect.querySelector('[value="mon"]').textContent = t.weekStartMon;
+        el.weekStartSelect.querySelector('[value="sun"]').textContent = t.weekStartSun;
+        const defaultWeekStart = locale.startsWith('es') ? 'mon' : 'sun';
+        el.weekStartSelect.value = localStorage.getItem('weekStart') || defaultWeekStart;
+        el.weekStartSelect.addEventListener('change', () => {
+            localStorage.setItem('weekStart', el.weekStartSelect.value);
             location.reload();
         });
         el.labelEstimatedCost.textContent = t.estimatedCost;
@@ -1262,20 +1290,60 @@
 
             el.scheduleEmpty.classList.add('hidden');
             el.scheduleGrid.classList.remove('hidden');
-            el.scheduleGrid.innerHTML = schedule.map(item => `
-                <article class="border-l-4 ${doctorColor(item.doctor.id, schedule)} p-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-sm font-semibold text-ink">${new Date(`${item.date}T00:00:00`).toLocaleDateString(undefined, {day: '2-digit', month: 'short'})}</p>
-                            <p class="mt-1 text-xs uppercase tracking-wide text-slate-500">${item.weekday}</p>
-                        </div>
-                        <div class="min-w-0 text-right">
-                            <p class="truncate text-sm font-semibold text-ink">${item.doctor.name}</p>
-                            <p class="mt-1 text-xs text-slate-500">${item.doctor.id}</p>
-                        </div>
-                    </div>
-                </article>
-            `).join('');
+
+            const weekStart = localStorage.getItem('weekStart') || (locale.startsWith('es') ? 'mon' : 'sun');
+            const firstDayOfWeek = weekStart === 'mon' ? 1 : 0;
+            const dayOrder = firstDayOfWeek === 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+            const dayNameFmt = new Intl.DateTimeFormat(locale, {weekday: 'short'});
+            // 2024-01-07 is a Sunday; adding dayIndex offsets to Mon, Tue, etc.
+            const dayHeaders = dayOrder.map(i => dayNameFmt.format(new Date(2024, 0, 7 + i)));
+
+            const [year, month] = (payload.month || '').split('-').map(Number);
+            const firstOfMonth = new Date(year, month - 1, 1);
+            const lastOfMonth = new Date(year, month, 0);
+
+            const dutyMap = Object.fromEntries(schedule.map(item => [item.date, item]));
+
+            let startDate = new Date(firstOfMonth);
+            while (startDate.getDay() !== firstDayOfWeek) {
+                startDate.setDate(startDate.getDate() - 1);
+            }
+
+            const cells = [];
+            const cur = new Date(startDate);
+            do {
+                const isCurrentMonth = cur.getMonth() === month - 1;
+                const dateStr = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
+                cells.push({ day: cur.getDate(), isCurrentMonth, duty: dutyMap[dateStr] || null });
+                cur.setDate(cur.getDate() + 1);
+            } while (cur <= lastOfMonth || cur.getDay() !== firstDayOfWeek);
+
+            const doctorIds = [...new Set(schedule.map(item => item.doctor.id))];
+            const badgeColors = [
+                'bg-pine text-white',
+                'bg-coral text-white',
+                'bg-sky-600 text-white',
+                'bg-amber-600 text-white',
+                'bg-fuchsia-700 text-white',
+                'bg-lime-700 text-white'
+            ];
+            const badgeColor = (id) => badgeColors[Math.max(0, doctorIds.indexOf(id)) % badgeColors.length];
+
+            const headerHtml = dayHeaders.map(name =>
+                `<div class="py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-slate-400 border-b border-line">${escapeHtml(name)}</div>`
+            ).join('');
+
+            const cellsHtml = cells.map(cell => {
+                const dutyHtml = cell.duty
+                    ? `<div class="mt-1 rounded px-1.5 py-0.5 text-xs font-medium leading-snug truncate ${badgeColor(cell.duty.doctor.id)}">${escapeHtml(cell.duty.doctor.name)}</div>`
+                    : '';
+                return `<div class="min-h-[4.5rem] border-b border-r border-line p-1.5${cell.isCurrentMonth ? '' : ' bg-mist'}">
+                    <span class="text-xs ${cell.isCurrentMonth ? 'text-slate-500' : 'text-slate-300'}">${cell.day}</span>
+                    ${dutyHtml}
+                </div>`;
+            }).join('');
+
+            el.scheduleGrid.innerHTML = `<div class="grid grid-cols-7 border-t border-l border-line rounded-md overflow-hidden">${headerHtml}${cellsHtml}</div>`;
         };
 
         el.form.addEventListener('submit', async (event) => {
