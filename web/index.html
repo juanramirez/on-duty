@@ -65,15 +65,24 @@
                 </form>
 
                 <div id="api-panel" class="hidden w-full sm:max-w-xs">
-                    <label class="grid gap-1 text-sm font-medium text-slate-700">
-                        <span id="label-api">API</span>
-                        <input
-                            id="api-input"
-                            type="url"
-                            class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
-                            value="http://127.0.0.1:3000"
-                        >
-                    </label>
+                    <div class="flex gap-3">
+                        <label class="grid flex-1 gap-1 text-sm font-medium text-slate-700">
+                            <span id="label-api">API</span>
+                            <input
+                                id="api-input"
+                                type="url"
+                                class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
+                                value="http://127.0.0.1:3000"
+                            >
+                        </label>
+                        <label class="grid gap-1 text-sm font-medium text-slate-700">
+                            <span id="label-language">Language</span>
+                            <select id="lang-select" class="h-10 rounded-md border border-line bg-white px-2 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </label>
+                    </div>
                 </div>
             </div>
         </header>
@@ -286,6 +295,8 @@
             labelGeneration: document.querySelector('#label-generation'),
             labelSchedule: document.querySelector('#label-schedule'),
             labelApi: document.querySelector('#label-api'),
+            labelLanguage: document.querySelector('#label-language'),
+            langSelect: document.querySelector('#lang-select'),
             apiToggle: document.querySelector('#api-toggle'),
             apiPanel: document.querySelector('#api-panel'),
             appVersion: document.querySelector('#app-version'),
@@ -301,7 +312,7 @@
         let lastChartGeneration = -1;
         let configState = null;
 
-        const locale = navigator.language;
+        const locale = localStorage.getItem('lang') || navigator.language;
         const ui = {
             en: {
                 pageTitle: 'On-duty schedule',
@@ -334,6 +345,7 @@
                 fieldDutyOffset: 'Duty offset',
                 fieldDutyOffsetDesc: 'Adjustment to the expected number of duties for this doctor. Positive values increase their share, negative values reduce it. Useful to account for duties assigned outside this schedule.',
                 labelApi: 'API endpoint',
+                labelLanguage: 'Language',
                 apiToggle: 'API settings',
                 pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Estimated cost:',
@@ -461,6 +473,7 @@
                 fieldDutyOffset: 'Compensación',
                 fieldDutyOffsetDesc: 'Ajuste al número de guardias esperadas para este médico. Valores positivos aumentan su cuota; negativos la reducen. Útil para compensar guardias asignadas fuera de este calendario.',
                 labelApi: 'Endpoint API',
+                labelLanguage: 'Idioma',
                 apiToggle: 'Ajustes de API',
                 pricingTierLabels: {free: 'Free', low: 'Starter', medium: 'Pro', high: 'Enterprise'},
                 estimatedCost: 'Coste estimado:',
@@ -575,7 +588,13 @@
         el.labelGeneration.textContent = t.labelGeneration;
         el.labelSchedule.textContent = t.labelSchedule;
         el.labelApi.textContent = t.labelApi;
+        el.labelLanguage.textContent = t.labelLanguage;
+        el.langSelect.value = locale.startsWith('es') ? 'es' : 'en';
         el.apiToggle.title = t.apiToggle;
+        el.langSelect.addEventListener('change', () => {
+            localStorage.setItem('lang', el.langSelect.value);
+            location.reload();
+        });
         el.labelEstimatedCost.textContent = t.estimatedCost;
         el.button.textContent = t.generate;
         el.stopButton.textContent = t.stop;
