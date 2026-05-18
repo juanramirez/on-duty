@@ -56,6 +56,7 @@
                     </button>
                     <div id="user-menu" class="hidden flex items-center gap-2">
                         <img id="user-avatar" class="h-8 w-8 shrink-0 rounded-full object-cover" src="" alt="">
+                        <span id="user-initials" class="hidden h-8 w-8 shrink-0 rounded-full bg-pine flex items-center justify-center text-xs font-semibold text-white"></span>
                         <span id="user-name" class="hidden max-w-[10rem] truncate text-sm font-medium text-ink sm:block"></span>
                     </div>
                     <div class="relative">
@@ -343,6 +344,7 @@
             signinButton: document.querySelector('#signin-button'),
             userMenu: document.querySelector('#user-menu'),
             userAvatar: document.querySelector('#user-avatar'),
+            userInitials: document.querySelector('#user-initials'),
             userName: document.querySelector('#user-name'),
             signoutButton: document.querySelector('#signout-button'),
             historyPanel: document.querySelector('#history-panel'),
@@ -1695,8 +1697,18 @@
             el.signoutContainer.classList.toggle('hidden', !user);
 
             if (user) {
+                const initials = (user.displayName || user.email || '?')
+                    .split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+                el.userInitials.textContent = initials;
+                el.userInitials.classList.add('hidden');
+                el.userAvatar.classList.remove('hidden');
+                el.userAvatar.alt = initials;
+                el.userAvatar.onerror = () => {
+                    el.userAvatar.classList.add('hidden');
+                    el.userInitials.classList.remove('hidden');
+                };
                 el.userAvatar.src = user.photoURL || '';
-                el.userAvatar.alt = user.displayName || '';
+                if (!user.photoURL) el.userAvatar.onerror();
                 el.userName.textContent = user.displayName || user.email || '';
                 el.historyPanel.classList.remove('hidden');
                 try {
