@@ -38,30 +38,15 @@
                 <p id="page-subtitle" class="mt-1.5 text-sm text-slate-500"></p>
             </div>
 
-            <div class="flex flex-col gap-2 sm:items-end">
-                <form id="schedule-form" class="flex flex-wrap items-center gap-3">
-                    <button
-                        id="generate-button"
-                        type="submit"
-                        class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                        Generate
-                    </button>
-
-                    <button
-                        id="stop-button"
-                        type="button"
-                        class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
-                    >
-                        Stop
-                    </button>
-
+            <div class="flex flex-col items-end gap-2">
+                <!-- Row 1: user info + gear dropdown -->
+                <div class="flex items-center gap-3">
                     <button
                         id="signin-button"
                         type="button"
-                        class="flex h-11 items-center gap-2 rounded-md border border-line bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"
+                        class="flex h-9 items-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"
                     >
-                        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -71,42 +56,63 @@
                     </button>
                     <div id="user-menu" class="hidden flex items-center gap-2">
                         <img id="user-avatar" class="h-8 w-8 shrink-0 rounded-full object-cover" src="" alt="">
-                        <span id="user-name" class="hidden max-w-[8rem] truncate text-sm font-medium text-ink sm:block"></span>
-                        <button id="signout-button" type="button" class="h-11 rounded-md border border-line bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20">
-                            <span id="label-signout">Sign out</span>
-                        </button>
+                        <span id="user-name" class="hidden max-w-[10rem] truncate text-sm font-medium text-ink sm:block"></span>
                     </div>
-                    <button
-                        id="api-toggle"
-                        type="button"
-                        class="flex h-11 w-11 items-center justify-center rounded-md border border-line bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none focus:ring-4 focus:ring-pine/20"
-                    >
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 0 1-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 0 1 .947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 0 1 2.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 0 1 2.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 0 1 .947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 0 1-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 0 1-2.287-.947ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
-                        </svg>
-                    </button>
-                </form>
-
-                <div id="api-panel" class="hidden w-full sm:max-w-xs">
-                    <div class="flex gap-3">
-                        <label class="grid flex-1 gap-1 text-sm font-medium text-slate-700">
-                            <span id="label-api">API</span>
-                            <input
-                                id="api-input"
-                                type="url"
-                                class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
-                                value="http://127.0.0.1:3000"
-                            >
-                        </label>
-                        <label class="grid gap-1 text-sm font-medium text-slate-700">
-                            <span id="label-language">Language</span>
-                            <select id="lang-select" class="h-10 rounded-md border border-line bg-white px-2 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4">
-                                <option value="en">English</option>
-                                <option value="es">Español</option>
-                            </select>
-                        </label>
+                    <div class="relative">
+                        <button
+                            id="api-toggle"
+                            type="button"
+                            class="flex h-9 w-9 items-center justify-center rounded-md border border-line bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none focus:ring-4 focus:ring-pine/20"
+                        >
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 0 1-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 0 1 .947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 0 1 2.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 0 1 2.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 0 1 .947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 0 1-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 0 1-2.287-.947ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                        <div id="api-panel" class="hidden absolute right-0 top-full z-20 mt-1 w-72 rounded-md border border-line bg-white p-3 shadow-lg">
+                            <div class="flex gap-3">
+                                <label class="grid flex-1 gap-1 text-sm font-medium text-slate-700">
+                                    <span id="label-api">API</span>
+                                    <input
+                                        id="api-input"
+                                        type="url"
+                                        class="h-10 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4"
+                                        value="http://127.0.0.1:3000"
+                                    >
+                                </label>
+                                <label class="grid gap-1 text-sm font-medium text-slate-700">
+                                    <span id="label-language">Language</span>
+                                    <select id="lang-select" class="h-10 rounded-md border border-line bg-white px-2 text-sm text-ink outline-none ring-pine/30 transition focus:ring-4">
+                                        <option value="en">English</option>
+                                        <option value="es">Español</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div id="signout-container" class="hidden mt-3 border-t border-line pt-3">
+                                <button id="signout-button" type="button" class="w-full rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-red-50 hover:text-red-600 hover:border-red-200 focus:outline-none focus:ring-4 focus:ring-red-500/20">
+                                    <span id="label-signout">Sign out</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Row 2: Generate + Stop -->
+                <form id="schedule-form" class="flex items-center gap-3">
+                    <button
+                        id="generate-button"
+                        type="submit"
+                        class="h-11 rounded-md bg-pine px-5 text-sm font-semibold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-pine/30 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    >
+                        Generate
+                    </button>
+                    <button
+                        id="stop-button"
+                        type="button"
+                        class="hidden h-11 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                    >
+                        Stop
+                    </button>
+                </form>
             </div>
         </header>
 
@@ -345,6 +351,7 @@
             signoutButton: document.querySelector('#signout-button'),
             historyPanel: document.querySelector('#history-panel'),
             historyList: document.querySelector('#history-list'),
+            signoutContainer: document.querySelector('#signout-container'),
             labelSignin: document.querySelector('#label-signin'),
             labelSignout: document.querySelector('#label-signout'),
             labelHistory: document.querySelector('#label-history')
@@ -1333,8 +1340,14 @@
             }
         });
 
-        el.apiToggle.addEventListener('click', () => {
+        el.apiToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
             el.apiPanel.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!el.apiPanel.classList.contains('hidden') && !el.apiPanel.contains(e.target)) {
+                el.apiPanel.classList.add('hidden');
+            }
         });
 
         // ─── Price estimation ─────────────────────────────────────────────────────
@@ -1578,6 +1591,7 @@
             currentUser = user;
             el.signinButton.classList.toggle('hidden', !!user);
             el.userMenu.classList.toggle('hidden', !user);
+            el.signoutContainer.classList.toggle('hidden', !user);
 
             if (user) {
                 el.userAvatar.src = user.photoURL || '';
