@@ -922,8 +922,7 @@
 
             const constraintLabel = (key) => {
                 const entry = (HARD_CONSTRAINTS.has(key) ? t.constraints : t.preferences)?.[key] || {};
-                return `<span class="flex items-center gap-1 font-medium text-ink">${entry.name || key}${infoIcon(key)}</span>
-                        <span class="mt-0.5 block text-xs text-slate-500">${entry.description || ''}</span>`;
+                return `<span class="font-medium text-ink">${entry.name || key}</span>`;
             };
 
             el.hardConstraintsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {})
