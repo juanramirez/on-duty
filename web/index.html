@@ -98,9 +98,10 @@
             </div>
         </section>
 
-        <section class="grid flex-1 gap-5 py-5 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]">
+        <section class="grid flex-1 gap-5 py-5 lg:grid-cols-[minmax(0,44rem)_minmax(0,1fr)]">
             <aside class="min-w-0 border-b border-line pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
-                <div class="flex items-center justify-between">
+                <div class="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:items-start">
+                <div class="flex items-center justify-between lg:col-span-2">
                     <h2 id="label-configuration" class="text-base font-semibold text-ink">Configuration</h2>
                     <div class="flex items-center gap-2">
                         <button
@@ -122,7 +123,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 grid gap-1 text-sm font-medium text-slate-700">
+                <div class="mt-4 grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
                     <span id="label-month">Month</span>
                     <div class="flex gap-1.5">
                         <select id="month-select" class="h-11 flex-1 min-w-0 rounded-md border border-line bg-white px-2 text-base text-ink outline-none ring-pine/30 transition focus:ring-4"></select>
@@ -153,43 +154,46 @@
                             Clear all
                         </button>
                     </div>
-                    <div id="config-doctors" class="mt-3 grid gap-3 max-h-96 overflow-y-auto pr-1"></div>
+                    <div id="config-doctors" class="mt-3 grid gap-3 pr-1"></div>
                 </details>
 
-                <details class="group mt-6">
-                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
-                        <span id="label-algorithm">Algorithm Parameters</span>
-                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
-                        </svg>
-                    </summary>
-                    <div id="algorithm-fields" class="mt-3 grid grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1"></div>
-                    <p id="price-estimate" class="hidden mt-3 text-sm text-slate-500">
-                        <span id="label-estimated-cost">Estimated cost:</span>
-                        <span id="price-value" class="ml-1 font-semibold text-ink"></span>
-                    </p>
-                </details>
+                <div class="mt-6 flex flex-col gap-6 lg:mt-4">
+                    <details class="group">
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                            <span id="label-algorithm">Algorithm Parameters</span>
+                            <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                            </svg>
+                        </summary>
+                        <div id="algorithm-fields" class="mt-3 grid grid-cols-2 gap-3 pr-1"></div>
+                        <p id="price-estimate" class="hidden mt-3 text-sm text-slate-500">
+                            <span id="label-estimated-cost">Estimated cost:</span>
+                            <span id="price-value" class="ml-1 font-semibold text-ink"></span>
+                        </p>
+                    </details>
 
-                <details class="group mt-6">
-                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
-                        <span id="label-hard-constraints">Constraints</span>
-                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
-                        </svg>
-                    </summary>
-                    <div id="hard-constraints-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
-                </details>
+                    <details class="group">
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                            <span id="label-hard-constraints">Constraints</span>
+                            <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                            </svg>
+                        </summary>
+                        <div id="hard-constraints-list" class="mt-3 grid gap-2 pr-1"></div>
+                    </details>
 
-                <details class="group mt-6">
-                    <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
-                        <span id="label-soft-constraints">Preferences</span>
-                        <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
-                        </svg>
-                    </summary>
-                    <p id="label-preferences-desc" class="mt-2 text-xs text-slate-500"></p>
-                    <div id="soft-constraints-list" class="mt-3 grid gap-2 max-h-96 overflow-y-auto pr-1"></div>
-                </details>
+                    <details class="group">
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-ink">
+                            <span id="label-soft-constraints">Preferences</span>
+                            <svg class="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+                            </svg>
+                        </summary>
+                        <p id="label-preferences-desc" class="mt-2 text-xs text-slate-500"></p>
+                        <div id="soft-constraints-list" class="mt-3 grid gap-2 pr-1"></div>
+                    </details>
+                </div>
+                </div>
             </aside>
 
             <section class="min-w-0">
