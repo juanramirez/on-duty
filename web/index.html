@@ -1533,6 +1533,15 @@
             });
         });
 
+        const asideDetails = [...document.querySelectorAll('aside > details')];
+        asideDetails.forEach(detail => {
+            detail.addEventListener('toggle', () => {
+                if (detail.open) {
+                    asideDetails.forEach(other => { if (other !== detail) other.open = false; });
+                }
+            });
+        });
+
         el.saveConfig.addEventListener('click', async () => {
             showMessage({text: ''});
             el.saveConfig.disabled = true;
