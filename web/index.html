@@ -957,7 +957,7 @@
             el.pricingTierBadge.classList.toggle('hidden', !tierLabel);
             if (configState.version) {
                 const major = parseInt(configState.version, 10);
-                const versionLabel = major >= 1 ? `v${configState.version}` : 'beta';
+                const versionLabel = isNaN(major) ? configState.version : major >= 1 ? `v${configState.version}` : 'beta';
                 el.versionBadge.textContent = versionLabel;
                 el.versionBadge.classList.remove('hidden');
                 el.appVersion.textContent = configState.version;
@@ -1041,8 +1041,8 @@
             Object.entries(rawPrefs).forEach(([k, v]) => { evaluatorWeights[k] = v / prefTotal; });
 
             return {
-                pricingTier: 'free',
-                version: '0.1.0',
+                pricingTier: null,
+                version: 'demo',
                 doctors,
                 dates: {notAvailableDates, desiredDutyDates, desiredFreeDates},
                 offsets,
