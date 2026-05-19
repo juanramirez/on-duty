@@ -24,6 +24,13 @@
             }
         };
     </script>
+    <style>
+        @media (min-width: 1024px) {
+            .sidebar-collapsed #layout-grid { grid-template-columns: 2.25rem minmax(0, 1fr); }
+            .sidebar-collapsed #layout-grid > aside { padding: 0; }
+            .sidebar-collapsed #config-content { display: none; }
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-mist text-ink antialiased">
     <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
@@ -123,8 +130,9 @@
             </div>
         </section>
 
-        <section class="grid flex-1 gap-5 py-5 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]">
-            <aside class="min-w-0 border-b border-line pb-5 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+        <section id="layout-grid" class="grid flex-1 gap-5 py-5 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]">
+            <aside class="flex min-w-0 border-b border-line pb-5 lg:border-b-0 lg:border-r lg:pb-0">
+                <div id="config-content" class="flex-1 min-w-0 lg:pr-5">
                 <div class="flex items-center justify-between">
                     <h2 id="label-configuration" class="text-base font-semibold text-ink">Configuration</h2>
                     <div class="flex items-center gap-2">
@@ -231,6 +239,17 @@
                         Stop
                     </button>
                 </form>
+                </div><!-- end config-content -->
+                <button
+                    id="sidebar-toggle"
+                    type="button"
+                    class="hidden lg:flex w-9 shrink-0 flex-col items-center justify-start gap-3 border-l border-line pt-3 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 focus:outline-none"
+                >
+                    <svg id="sidebar-toggle-icon" class="h-3.5 w-3.5 shrink-0 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="sidebar-tab-label" class="text-xs font-medium text-slate-500 select-none" style="writing-mode:vertical-rl;transform:rotate(180deg)">Configuration</span>
+                </button>
             </aside>
 
             <section class="min-w-0">
@@ -355,8 +374,22 @@
             signoutContainer: document.querySelector('#signout-container'),
             labelSignin: document.querySelector('#label-signin'),
             labelSignout: document.querySelector('#label-signout'),
-            labelHistory: document.querySelector('#label-history')
+            labelHistory: document.querySelector('#label-history'),
+            sidebarToggle: document.querySelector('#sidebar-toggle'),
+            sidebarToggleIcon: document.querySelector('#sidebar-toggle-icon'),
+            sidebarTabLabel: document.querySelector('#sidebar-tab-label')
         };
+
+        (() => {
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (collapsed) document.body.classList.add('sidebar-collapsed');
+            el.sidebarToggleIcon.style.transform = collapsed ? 'rotate(180deg)' : '';
+            el.sidebarToggle.addEventListener('click', () => {
+                const isNowCollapsed = document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', isNowCollapsed);
+                el.sidebarToggleIcon.style.transform = isNowCollapsed ? 'rotate(180deg)' : '';
+            });
+        })();
 
         let activeJobId = null;
         let chart = null;
@@ -736,6 +769,7 @@
         el.pageSubtitle.innerHTML = t.pageSubtitleHtml;
         el.labelMonth.textContent = t.labelMonth;
         el.labelConfiguration.textContent = t.configuration;
+        el.sidebarTabLabel.textContent = t.configuration;
         el.labelDoctors.textContent = t.doctors;
         el.labelAlgorithm.textContent = t.algorithmParameters;
         el.labelHardConstraints.textContent = t.constraintsSection;
