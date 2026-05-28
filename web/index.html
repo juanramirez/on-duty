@@ -1308,6 +1308,76 @@
             }
         };
 
+        const syncModalSegmentsFromInputs = () => {
+            const inputs = [...el.prefsModalList.querySelectorAll('.modal-pref-input')];
+            const total = inputs.reduce((sum, inp) => sum + (Number(inp.value) || 0), 0);
+            const segments = [...el.prefsModalBar.querySelectorAll('.modal-pref-segment')];
+            const handles = [...el.prefsModalBar.querySelectorAll('.modal-pref-handle')];
+            let cumulative = 0;
+            inputs.forEach((inp, idx) => {
+                const pct = total > 0 ? Number(inp.value) / total * 100 : 0;
+                if (segments[idx]) {
+                    segments[idx].style.left = cumulative + '%';
+                    segments[idx].style.width = pct + '%';
+                }
+                if (idx > 0 && handles[idx - 1]) {
+                    handles[idx - 1].style.left = cumulative + '%';
+                }
+                cumulative += pct;
+            });
+        };
+
+        const updateModalInputsFromSegments = () => {
+            const segments = [...el.prefsModalBar.querySelectorAll('.modal-pref-segment')];
+            const total = segments.reduce((sum, seg) => sum + parseFloat(seg.style.width), 0);
+            segments.forEach(seg => {
+                const pct = total > 0 ? parseFloat(seg.style.width) / total * 100 : 0;
+                const input = el.prefsModalList.querySelector(`.modal-pref-input[data-key="${seg.dataset.key}"]`);
+                if (input) input.value = Math.round(pct * 10) / 10;
+            });
+        };
+
+        const openPrefsModal = () => {
+            if (!configState) return;
+            const weights = configState.algorithm.evaluatorWeights || {};
+            const softEntries = Object.entries(weights).filter(([k]) => !HARD_CONSTRAINTS.has(k));
+            const softTotal = softEntries.reduce((sum, [, v]) => sum + v, 0);
+            const softWithPct = softEntries.map(([key, value], index) => ({
+                key,
+                pct: softTotal > 0 ? Math.round(value / softTotal * 1000) / 10 : 0,
+                color: preferenceColors[index % preferenceColors.length]
+            }));
+
+            let barHtml = '';
+            let cumulative = 0;
+            softWithPct.forEach((item, idx) => {
+                if (idx > 0) {
+                    barHtml += `<div class="modal-pref-handle" data-index="${idx}" style="left:${cumulative}%;position:absolute;width:4px;height:100%;background:rgba(31,41,51,0.5);cursor:ew-resize;z-index:1;"></div>`;
+                }
+                barHtml += `<div class="modal-pref-segment" data-key="${item.key}" style="left:${cumulative}%;width:${item.pct}%;background-color:${item.color};position:absolute;height:100%;cursor:ew-resize;" title="${t.preferences?.[item.key]?.name || item.key}"></div>`;
+                cumulative += item.pct;
+            });
+            el.prefsModalBar.innerHTML = barHtml;
+            el.prefsModalBar.querySelectorAll('.modal-pref-handle').forEach(h => {
+                h.addEventListener('mousedown', startModalDragging);
+            });
+
+            el.prefsModalList.innerHTML = softWithPct.map(item => {
+                const desc = t.preferences?.[item.key]?.description || '';
+                const titleAttr = desc ? ` title="${desc}"` : '';
+                return `
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#f8fafc;border-radius:4px;border:1px solid #d8dee7;font-size:12px;"${titleAttr}>
+                    <div style="width:12px;height:12px;background-color:${item.color};border-radius:2px;flex-shrink:0;"></div>
+                    <div style="flex:1;min-width:0;font-weight:500;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${t.preferences?.[item.key]?.name || item.key}</div>
+                    <input type="number" class="modal-pref-input" data-key="${item.key}" min="0" max="100" value="${Math.round(item.pct)}" style="width:52px;height:28px;padding:2px 4px;border:1px solid #d8dee7;border-radius:3px;font-size:12px;font-weight:600;">
+                </div>`;
+            }).join('');
+
+            el.prefsModalCancel.textContent = t.cancelPreferences;
+            el.prefsModalApply.textContent = t.applyPreferences;
+            el.prefsModal.classList.remove('hidden');
+        };
+
         const collectConfig = () => {
             const next = {
                 doctors: [],
