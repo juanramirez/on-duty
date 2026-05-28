@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "date-fns": "^4.1.0",
-    "genetical": "github:juanramirez/genetical",
+    "genetical": "github:juanramirez/genetical#master",
     "lodash-es": "^4.18.1",
     "mathjs": "^10.0.0",
     "minimist": "^1.2.8"
@@ -31,7 +31,6 @@
     "yarn-upgrade-all": "^0.5.4"
   },
   "overrides": {
-    "lodash": "^4.18.1",
     "jest-util": {
       "picomatch": "^4.0.4"
     },
