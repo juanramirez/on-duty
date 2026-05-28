@@ -1078,7 +1078,7 @@
         };
 
         const renderConfig = () => {
-            if (!configState) return;
+            if (!configState || !el.monthSelect || !el.yearSelect) return;
 
             const pickerYear = el.yearSelect.value;
             const pickerMonth = el.monthSelect.value;
