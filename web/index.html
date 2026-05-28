@@ -111,6 +111,43 @@
 
         <section id="message" class="hidden mt-4 rounded-md border px-4 py-3 text-sm"></section>
 
+        <!-- Hard constraints modal -->
+        <div id="hard-constraints-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="rounded-lg border border-line bg-white p-6 max-w-md shadow-lg">
+                <h2 id="modal-title" class="text-lg font-semibold text-ink">Constraint Violation</h2>
+                <p id="modal-message" class="mt-3 text-sm text-slate-600"></p>
+                <div class="mt-6 flex gap-3">
+                    <button id="modal-cancel-btn" type="button" class="flex-1 rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20">
+                        Stop
+                    </button>
+                    <button id="modal-continue-btn" type="button" class="flex-1 rounded-md bg-pine px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-100 hover:text-pine hover:border hover:border-pine focus:outline-none focus:ring-4 focus:ring-pine/30">
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences expand modal -->
+        <div id="prefs-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="relative mx-4 w-full max-w-2xl rounded-lg border border-line bg-white p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-ink" id="prefs-modal-title"></h2>
+                    <button id="prefs-modal-close" type="button" class="rounded p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-pine/30">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="prefs-modal-bar" style="position:relative;height:120px;background:#f8fafc;border:1px solid #d8dee7;border-radius:0.375rem;overflow:hidden;"></div>
+                <div id="prefs-modal-list" class="mt-4 grid gap-2 max-h-64 overflow-y-auto pr-1"></div>
+                <div class="mt-5 flex justify-end gap-3">
+                    <button id="prefs-modal-cancel" type="button" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"></button>
+                    <button id="prefs-modal-apply" type="button" class="rounded-md bg-pine px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-100 hover:text-pine hover:border hover:border-pine focus:outline-none focus:ring-4 focus:ring-pine/30"></button>
+                </div>
+            </div>
+        </div>
+
+
         <section id="progress-panel" class="hidden mt-4 rounded-md border border-line bg-white p-4">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -377,7 +414,21 @@
             labelHistory: document.querySelector('#label-history'),
             sidebarToggle: document.querySelector('#sidebar-toggle'),
             sidebarToggleIcon: document.querySelector('#sidebar-toggle-icon'),
-            sidebarTabLabel: document.querySelector('#sidebar-tab-label')
+            sidebarTabLabel: document.querySelector('#sidebar-tab-label'),
+            hardConstraintsModal: document.querySelector('#hard-constraints-modal'),
+            modalTitle: document.querySelector('#modal-title'),
+            modalMessage: document.querySelector('#modal-message'),
+            modalCancelBtn: document.querySelector('#modal-cancel-btn'),
+            modalContinueBtn: document.querySelector('#modal-continue-btn'),
+            prefsModal: document.querySelector('#prefs-modal'),
+            prefsModalTitle: document.querySelector('#prefs-modal-title'),
+            prefsModalClose: document.querySelector('#prefs-modal-close'),
+            prefsModalBar: document.querySelector('#prefs-modal-bar'),
+            prefsModalList: document.querySelector('#prefs-modal-list'),
+            prefsModalCancel: document.querySelector('#prefs-modal-cancel'),
+            prefsModalApply: document.querySelector('#prefs-modal-apply'),
+            expandPrefsBtn: document.querySelector('#expand-prefs-btn'),
+            labelExpandPrefs: document.querySelector('#label-expand-prefs')
         };
 
         (() => {
@@ -790,6 +841,7 @@
         el.labelSignin.textContent = t.signin;
         el.labelSignout.textContent = t.signout;
         el.labelHistory.textContent = t.history;
+        el.prefsModalTitle.textContent = t.preferencesSection;
         el.langSelect.value = locale.startsWith('es') ? 'es' : 'en';
         el.apiToggle.title = t.apiToggle;
         el.langSelect.addEventListener('change', () => {
