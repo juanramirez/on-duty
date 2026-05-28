@@ -1144,6 +1144,53 @@
             el.discardConfig.disabled = !dirty;
         };
 
+        const preferenceColors = [
+            '#FF6B6B',
+            '#4ECDC4',
+            '#45B7D1',
+            '#FFA07A',
+            '#98D8C8',
+            '#F7DC6F',
+            '#BB8FCE',
+            '#85C1E2',
+            '#F8B88B',
+            '#A8E6CF',
+            '#FF8B94',
+            '#64B5F6',
+        ];
+
+        const savePreferences = () => {
+            const weights = {};
+            document.querySelectorAll('.weight-field').forEach(f => {
+                weights[f.dataset.name] = Number(f.value) / 100;
+            });
+            const activeHard = document.querySelectorAll('.hard-constraint-field:checked').length;
+            const hardWeight = activeHard > 0 ? HARD_TOTAL_WEIGHT / activeHard : 0;
+            document.querySelectorAll('.hard-constraint-field').forEach(checkbox => {
+                weights[checkbox.dataset.name] = checkbox.checked ? hardWeight : 0;
+            });
+            localStorage.setItem('evaluatorWeights', JSON.stringify(weights));
+        };
+
+        let draggingHandle = null;
+        let draggingIndex = null;
+
+        const startDragging = (event) => {
+            draggingHandle = event.currentTarget;
+            draggingIndex = parseInt(draggingHandle.dataset.index);
+            event.preventDefault();
+        };
+
+        let modalDraggingHandle = null;
+        let modalDraggingIndex = null;
+
+        const startModalDragging = (event) => {
+            modalDraggingHandle = event.currentTarget;
+            modalDraggingIndex = parseInt(modalDraggingHandle.dataset.index);
+            event.preventDefault();
+        };
+
+
         const renderConfig = () => {
             if (!configState || !el.monthSelect || !el.yearSelect) return;
 
@@ -1706,6 +1753,32 @@
             setDirty(true);
         });
         el.configAside.addEventListener('change', () => setDirty(true));
+
+        document.addEventListener('mousemove', (event) => {
+            if (!modalDraggingHandle || modalDraggingIndex === null) return;
+            const rect = el.prefsModalBar.getBoundingClientRect();
+            const newPosition = Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100));
+            const segments = [...el.prefsModalBar.querySelectorAll('.modal-pref-segment')];
+            const leftSegment = segments[modalDraggingIndex - 1];
+            const rightSegment = segments[modalDraggingIndex];
+            if (!leftSegment || !rightSegment) return;
+            const leftStart = parseFloat(leftSegment.style.left);
+            const rightEnd = parseFloat(rightSegment.style.left) + parseFloat(rightSegment.style.width);
+            const constrainedPos = Math.max(leftStart + 3, Math.min(rightEnd - 3, newPosition));
+            leftSegment.style.width = (constrainedPos - leftStart) + '%';
+            rightSegment.style.left = constrainedPos + '%';
+            rightSegment.style.width = (rightEnd - constrainedPos) + '%';
+            const handles = [...el.prefsModalBar.querySelectorAll('.modal-pref-handle')];
+            handles[modalDraggingIndex - 1].style.left = constrainedPos + '%';
+            updateModalInputsFromSegments();
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (modalDraggingHandle) {
+                modalDraggingHandle = null;
+                modalDraggingIndex = null;
+            }
+        });
 
         el.configDoctors.addEventListener('click', (event) => {
             if (event.target.classList.contains('remove-doctor')) {
