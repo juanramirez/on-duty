@@ -129,7 +129,7 @@
 
         <!-- Preferences expand modal -->
         <div id="prefs-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="relative mx-4 w-full max-w-2xl rounded-lg border border-line bg-white p-6 shadow-xl">
+            <div class="relative mx-4 w-full max-w-3xl rounded-lg border border-line bg-white p-6 shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-base font-semibold text-ink" id="prefs-modal-title"></h2>
                     <button id="prefs-modal-close" type="button" class="rounded p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-pine/30">
@@ -138,7 +138,7 @@
                         </svg>
                     </button>
                 </div>
-                <div id="prefs-modal-bar" style="position:relative;height:120px;background:#f8fafc;border:1px solid #d8dee7;border-radius:0.375rem;overflow:hidden;"></div>
+                <div id="prefs-modal-bar" style="position:relative;height:200px;background:#f8fafc;border:1px solid #d8dee7;border-radius:0.375rem;overflow:hidden;"></div>
                 <div id="prefs-modal-list" class="mt-4 grid gap-2 max-h-64 overflow-y-auto pr-1"></div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button id="prefs-modal-cancel" type="button" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-pine/20"></button>
@@ -932,13 +932,9 @@
             'islandOptions.epoch'
         ];
 
-        // Constraints treated as hard: shown as checkboxes in the UI.
-        // When checked they are saved with HARD_CONSTRAINT_WEIGHT; unchecked saves 0.
-        const HARD_CONSTRAINTS = new Set([
-            'commonNotConsecutiveWeekdays',
-            'personalNotAvailableDates',
-            'personalNotAvailableWeekdays'
-        ]);
+        // Default hard constraints — overridden by configState.algorithm.hardConstraintKeys after load.
+        const DEFAULT_HARD_CONSTRAINT_KEYS = ['commonNotConsecutiveWeekdays', 'personalNotAvailableDates', 'personalNotAvailableWeekdays'];
+        let HARD_CONSTRAINTS = new Set(DEFAULT_HARD_CONSTRAINT_KEYS);
         const HARD_TOTAL_WEIGHT = 99; // hard constraints always own 99% of the score, split equally among active ones
 
         const infoIcon = (description) => description ? `
@@ -1265,18 +1261,26 @@
                 `;
             }).join('');
 
+            HARD_CONSTRAINTS = new Set(configState.algorithm.hardConstraintKeys || DEFAULT_HARD_CONSTRAINT_KEYS);
+
             const constraintLabel = (key) => {
                 const entry = (HARD_CONSTRAINTS.has(key) ? t.constraints : t.preferences)?.[key] || {};
                 return `<span class="font-medium text-ink">${entry.name || key}</span>`;
             };
 
-            el.hardConstraintsList.innerHTML = Object.entries(configState.algorithm.evaluatorWeights || {})
-                .filter(([key]) => HARD_CONSTRAINTS.has(key))
-                .map(([key, value]) => `
-                    <label class="grid grid-cols-[1fr_auto] items-center gap-4 rounded-md border border-line bg-white px-3 py-2.5 text-sm">
+            const moveBtn = (cls, label, key) =>
+                `<button type="button" class="${cls} text-xs text-slate-400 hover:text-pine whitespace-nowrap px-1" data-name="${key}">${label}</button>`;
+
+            el.hardConstraintsList.innerHTML = [...HARD_CONSTRAINTS]
+                .map(key => {
+                    const value = configState.algorithm.evaluatorWeights?.[key] ?? 0;
+                    return `
+                    <div class="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-md border border-line bg-white px-3 py-2.5 text-sm">
                         <span>${constraintLabel(key)}</span>
-                        <input type="checkbox" class="hard-constraint-field h-4 w-4" data-name="${key}" ${value > 0 ? 'checked' : ''}>
-                    </label>`).join('');
+                        ${moveBtn('move-to-soft-btn', '→ Preferencias', key)}
+                        <input type="checkbox" class="hard-constraint-field h-4 w-4 cursor-pointer" data-name="${key}" ${value > 0 ? 'checked' : ''}>
+                    </div>`;
+                }).join('');
 
             const softEntries = Object.entries(configState.algorithm.evaluatorWeights || {})
                 .filter(([key]) => !HARD_CONSTRAINTS.has(key));
@@ -1285,13 +1289,14 @@
                 .map(([key, value]) => {
                     const pct = softTotal > 0 ? Math.round(value / softTotal * 1000) / 10 : 0;
                     return `
-                    <label class="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-line bg-white px-3 py-2 text-sm">
+                    <div class="grid grid-cols-[1fr_auto_7rem] items-center gap-2 rounded-md border border-line bg-white px-3 py-2 text-sm">
                         <span>${constraintLabel(key)}</span>
+                        ${moveBtn('move-to-hard-btn', '→ Restricciones', key)}
                         <div class="flex items-center gap-1">
                             <input class="weight-field h-10 w-full rounded-md border border-line px-3 text-sm outline-none focus:ring-4 focus:ring-pine/20" data-name="${key}" type="number" min="0" max="100" step="1" value="${pct}">
                             <span class="shrink-0 text-slate-500">%</span>
                         </div>
-                    </label>`;
+                    </div>`;
                 }).join('');
 
             const tierLabel = t.pricingTierLabels[configState.pricingTier] ?? configState.pricingTier;
@@ -1765,6 +1770,31 @@
             setDirty(true);
         });
         el.configAside.addEventListener('change', () => setDirty(true));
+
+        el.hardConstraintsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.move-to-soft-btn');
+            if (!btn) return;
+            const key = btn.dataset.name;
+            configState.algorithm.hardConstraintKeys = (configState.algorithm.hardConstraintKeys || [...DEFAULT_HARD_CONSTRAINT_KEYS])
+                .filter(k => k !== key);
+            configState.algorithm.evaluatorWeights = configState.algorithm.evaluatorWeights || {};
+            configState.algorithm.evaluatorWeights[key] = 0;
+            setDirty(true);
+            renderConfig();
+        });
+
+        el.softConstraintsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.move-to-hard-btn');
+            if (!btn) return;
+            const key = btn.dataset.name;
+            const keys = configState.algorithm.hardConstraintKeys || [...DEFAULT_HARD_CONSTRAINT_KEYS];
+            if (!keys.includes(key)) keys.push(key);
+            configState.algorithm.hardConstraintKeys = keys;
+            configState.algorithm.evaluatorWeights = configState.algorithm.evaluatorWeights || {};
+            configState.algorithm.evaluatorWeights[key] = 0;
+            setDirty(true);
+            renderConfig();
+        });
 
         document.addEventListener('mousemove', (event) => {
             if (!modalDraggingHandle || modalDraggingIndex === null) return;
