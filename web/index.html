@@ -1264,7 +1264,7 @@
             HARD_CONSTRAINTS = new Set(configState.algorithm.hardConstraintKeys || DEFAULT_HARD_CONSTRAINT_KEYS);
 
             const constraintLabel = (key) => {
-                const entry = (HARD_CONSTRAINTS.has(key) ? t.constraints : t.preferences)?.[key] || {};
+                const entry = t.constraints?.[key] || t.preferences?.[key] || {};
                 return `<span class="font-medium text-ink">${entry.name || key}</span>`;
             };
 
