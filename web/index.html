@@ -1399,9 +1399,9 @@
             let cumulative = 0;
             softWithPct.forEach((item, idx) => {
                 if (idx > 0) {
-                    barHtml += `<div class="modal-pref-handle" data-index="${idx}" style="left:${cumulative}%;position:absolute;width:4px;height:100%;background:rgba(31,41,51,0.5);cursor:ew-resize;z-index:1;"></div>`;
+                    barHtml += `<div class="modal-pref-handle" data-index="${idx}" style="left:${cumulative}%;position:absolute;width:12px;height:100%;background:rgba(31,41,51,0.4);cursor:ew-resize;z-index:1;transform:translateX(-50%);"></div>`;
                 }
-                barHtml += `<div class="modal-pref-segment" data-key="${item.key}" style="left:${cumulative}%;width:${item.pct}%;background-color:${item.color};position:absolute;height:100%;cursor:ew-resize;" title="${t.preferences?.[item.key]?.name || item.key}"></div>`;
+                barHtml += `<div class="modal-pref-segment" data-key="${item.key}" style="left:${cumulative}%;width:${item.pct}%;background-color:${item.color};position:absolute;height:100%;cursor:default;" title="${t.preferences?.[item.key]?.name || item.key}"></div>`;
                 cumulative += item.pct;
             });
             el.prefsModalBar.innerHTML = barHtml;
