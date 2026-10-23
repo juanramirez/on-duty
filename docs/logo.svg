@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DoctorPlan logo">
+  <circle cx="32" cy="32" r="29" fill="#f7f4ee" stroke="#b91c1c" stroke-width="4"/>
+  <!-- calendar -->
+  <rect x="15" y="17" width="34" height="30" rx="4" fill="#ffffff" stroke="#1B1F23" stroke-width="2.5"/>
+  <path d="M15 21 a4 4 0 0 1 4 -4 h26 a4 4 0 0 1 4 4 v5 h-34 z" fill="#b91c1c" stroke="#1B1F23" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M23 13.5 v6 M41 13.5 v6" stroke="#1B1F23" stroke-width="3" stroke-linecap="round"/>
+  <!-- medical cross in the header -->
+  <path d="M32 18.8 v5.4 M29.3 21.5 h5.4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <!-- shifts -->
+  <g fill="#d6d1c6">
+    <rect x="19" y="30" width="6" height="5" rx="1"/>
+    <rect x="29" y="30" width="6" height="5" rx="1"/>
+    <rect x="19" y="38" width="6" height="5" rx="1"/>
+    <rect x="39" y="38" width="6" height="5" rx="1"/>
+  </g>
+  <g fill="#b91c1c">
+    <rect x="39" y="30" width="6" height="5" rx="1"/>
+    <rect x="29" y="38" width="6" height="5" rx="1"/>
+  </g>
+</svg>

@@ -1,6 +1,4 @@
-### <img src="https://juanramirez.github.io/assets/images/projects/doctorplan/logo-dark.png" alt="DoctorPlan" width="200"/>
-
-# On-duty-organizer
+# <img src="docs/logo.svg" alt="" width="48" height="48" align="absmiddle"/> On-duty-organizer
 **On-duty-organizer** (a.k.a. "_DoctorPlan_") is an open-source on-duty schedule organizer for hospital services built with NodeJS. It was started in 2017 to reduce the time, energy and discussions that on-duty scheduling consumed in a paediatric hospital service. _DoctorPlan_ takes into account doctor preferences, availability constraints and fairness criteria to generate optimal on-duty schedules using [evolutionary algorithms](https://en.wikipedia.org/wiki/Evolutionary_algorithm).
 
 Theoretically, a similar approach could be used to organize on-duty days in any kind of professional service which requires someone to always be on-duty.
